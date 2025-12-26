@@ -1,0 +1,26 @@
+{
+  "name": "entropy-zero",
+  "version": "1.0.0",
+  "description": "空间思维任务引擎 - 基于本地优先理念的新一代任务管理系统",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --parallel --filter \"./packages/*\" dev",
+    "build": "pnpm --recursive --filter \"./packages/*\" build",
+    "test": "pnpm --recursive --filter \"./packages/*\" test",
+    "lint": "oxlint packages/*/src",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "pnpm --recursive --filter \"./packages/*\" clean"
+  },
+  "keywords": ["monorepo", "task-management", "canvas", "ai"],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.17.1",
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "oxlint": "^0.9.0",
+    "prettier": "^3.0.0"
+  }
+}

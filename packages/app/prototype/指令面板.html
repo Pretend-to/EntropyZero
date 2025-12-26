@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>指令面板 - macOS Spotlight 风格</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 毛玻璃背景遮罩 */
+        .glass-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease-out;
+            z-index: 1000;
+        }
+
+        .glass-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* 指令面板容器 */
+        .command-palette {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            width: 600px;
+            max-width: calc(100vw - 40px);
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease-out;
+            z-index: 1001;
+        }
+
+        .command-palette.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .command-palette.expanded {
+            height: 400px;
+        }
+
+        /* 搜索输入框 */
+        .search-input {
+            width: 100%;
+            padding: 20px 24px;
+            background: transparent;
+            border: none;
+            outline: none;
+            font-size: 18px;
+            color: white;
+            font-weight: 400;
+            letter-spacing: 0.5px;
+        }
+
+        .search-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        /* 场景指示器 */
+        .scene-indicator {
+            position: absolute;
+            top: 20px;
+            right: 24px;
+            padding: 4px 8px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.8);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .scene-indicator.visible {
+            opacity: 1;
+        }
+
+        /* 可展开内容区域 */
+        .expandable-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .command-palette.expanded .expandable-content {
+            max-height: 340px;
+        }
+
+        /* 默认建议列表 */
+        .suggestions-list {
+            padding: 16px 0;
+        }
+
+        .suggestion-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .suggestion-item:hover,
+        .suggestion-item.selected {
+            background: rgba(255, 255, 255, 0.1);
+            border-left-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .suggestion-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            opacity: 0.8;
+        }
+
+        .suggestion-content {
+            flex: 1;
+        }
+
+        .suggestion-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .suggestion-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .suggestion-shortcut {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 11px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        /* AI 聊天场景 */
+        .ai-scene {
+            display: none;
+            padding: 16px 24px;
+            height: 340px;
+        }
+
+        .ai-scene.active {
+            display: block;
+        }
+
+        .chat-messages {
+            height: 240px;
+            overflow-y: auto;
+            margin-bottom: 16px;
+            padding-right: 8px;
+        }
+
+        .chat-message {
+            margin-bottom: 12px;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .chat-message.user {
+            background: rgba(0, 123, 255, 0.3);
+            color: white;
+            margin-left: 40px;
+        }
+
+        .chat-message.assistant {
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.9);
+            margin-right: 40px;
+        }
+
+        .chat-input {
+            width: 100%;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            color: white;
+            font-size: 14px;
+            outline: none;
+        }
+
+        /* 搜索场景 */
+        .search-scene {
+            display: none;
+            padding: 16px 0;
+        }
+
+        .search-scene.active {
+            display: block;
+        }
+
+        .search-results {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .search-result {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .search-result:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .result-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .result-path {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 12px;
+            margin-bottom: 2px;
+        }
+
+        .result-preview {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            line-height: 1.3;
+        }
+
+        .highlight {
+            background: rgba(255, 255, 0, 0.3);
+            color: white;
+            padding: 1px 2px;
+            border-radius: 2px;
+        }
+
+        /* 模板场景 */
+        .template-scene {
+            display: none;
+            padding: 16px 24px;
+        }
+
+        .template-scene.active {
+            display: block;
+        }
+
+        .template-categories {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+            overflow-x: auto;
+            padding-bottom: 8px;
+        }
+
+        .category-tag {
+            padding: 6px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+        }
+
+        .category-tag.active,
+        .category-tag:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 12px;
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .template-card {
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .template-card:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .template-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .template-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+            line-height: 1.3;
+            margin-bottom: 8px;
+        }
+
+        .template-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        /* 工作流场景 */
+        .workflow-scene {
+            display: none;
+            padding: 16px 24px;
+        }
+
+        .workflow-scene.active {
+            display: block;
+        }
+
+        .workflow-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .workflow-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .workflow-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .workflow-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+            font-size: 16px;
+        }
+
+        .workflow-content {
+            flex: 1;
+        }
+
+        .workflow-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .workflow-description {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 12px;
+        }
+
+        .workflow-status {
+            padding: 4px 8px;
+            background: rgba(0, 255, 0, 0.2);
+            color: rgba(0, 255, 0, 0.8);
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        /* 设置场景 */
+        .settings-scene {
+            display: none;
+            padding: 16px 24px;
+        }
+
+        .settings-scene.active {
+            display: block;
+        }
+
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-group-title {
+            color: white;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            padding-left: 4px;
+        }
+
+        .setting-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .setting-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .setting-label {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 13px;
+        }
+
+        .setting-toggle {
+            width: 36px;
+            height: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            position: relative;
+            transition: background-color 0.15s ease;
+        }
+
+        .setting-toggle.active {
+            background: rgba(0, 122, 255, 0.8);
+        }
+
+        .setting-toggle::after {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.15s ease;
+        }
+
+        .setting-toggle.active::after {
+            transform: translateX(16px);
+        }
+
+        /* 帮助场景 */
+        .help-scene {
+            display: none;
+            padding: 16px 24px;
+        }
+
+        .help-scene.active {
+            display: block;
+        }
+
+        .help-content {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .help-section {
+            margin-bottom: 16px;
+        }
+
+        .help-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        .help-shortcuts {
+            display: grid;
+            gap: 6px;
+        }
+
+        .shortcut-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .shortcut-description {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 12px;
+        }
+
+        .shortcut-keys {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 11px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        /* 快捷键提示 */
+        .keyboard-hints {
+            position: absolute;
+            bottom: 16px;
+            left: 24px;
+            right: 24px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .hint-group {
+            display: flex;
+            gap: 16px;
+        }
+
+        .hint {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .key {
+            padding: 2px 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            font-family: 'SF Mono', Monaco, monospace;
+        }
+
+        /* 滚动条样式 */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <!-- 毛玻璃背景遮罩 -->
+    <div class="glass-overlay" id="glassOverlay"></div>
+
+    <!-- 指令面板 -->
+    <div class="command-palette" id="commandPalette">
+        <!-- 搜索输入框 -->
+        <input 
+            type="text" 
+            class="search-input" 
+            id="searchInput"
+            placeholder="输入指令或搜索内容..."
+            autocomplete="off"
+            spellcheck="false"
+        >
+
+        <!-- 场景指示器 -->
+        <div class="scene-indicator" id="sceneIndicator">默认</div>
+
+        <!-- 可展开内容区域 -->
+        <div class="expandable-content" id="expandableContent">
+            <!-- 默认建议列表 -->
+            <div class="suggestions-list" id="defaultScene">
+                <div class="suggestion-item selected">
+                    <div class="suggestion-icon">🤖</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">AI 助手</div>
+                        <div class="suggestion-description">与 AI 对话，获取智能建议</div>
+                    </div>
+                    <div class="suggestion-shortcut">/ai</div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">🔍</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">全局搜索</div>
+                        <div class="suggestion-description">搜索任务、文件和内容</div>
+                    </div>
+                    <div class="suggestion-shortcut">/search</div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">📋</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">模板库</div>
+                        <div class="suggestion-description">使用预设模板快速创建任务</div>
+                    </div>
+                    <div class="suggestion-shortcut">/template</div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">⚡</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">工作流</div>
+                        <div class="suggestion-description">执行自动化工作流程</div>
+                    </div>
+                    <div class="suggestion-shortcut">/workflow</div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">⚙️</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">设置</div>
+                        <div class="suggestion-description">配置应用偏好和选项</div>
+                    </div>
+                    <div class="suggestion-shortcut">/settings</div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">❓</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">帮助</div>
+                        <div class="suggestion-description">查看快捷键和使用指南</div>
+                    </div>
+                    <div class="suggestion-shortcut">/help</div>
+                </div>
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">➕</div>
+                    <div class="suggestion-content">
+                        <div class="suggestion-title">创建新任务</div>
+                        <div class="suggestion-description">快速添加新的任务节点</div>
+                    </div>
+                    <div class="suggestion-shortcut">⌘N</div>
+                </div>
+            </div>
+
+            <!-- AI 聊天场景 -->
+            <div class="ai-scene" id="aiScene">
+                <div class="chat-messages" id="chatMessages">
+                    <div class="chat-message assistant">
+                        你好！我是 AI 助手，可以帮你创建任务、分析项目或回答问题。有什么我可以帮助你的吗？
+                    </div>
+                </div>
+                <input 
+                    type="text" 
+                    class="chat-input" 
+                    id="chatInput"
+                    placeholder="输入你的问题或需求..."
+                >
+            </div>
+
+            <!-- 搜索场景 -->
+            <div class="search-scene" id="searchScene">
+                <div class="search-results" id="searchResults">
+                    <div class="search-result">
+                        <div class="result-title">项目规划任务</div>
+                        <div class="result-path">画布 > 项目管理</div>
+                        <div class="result-preview">制定详细的<span class="highlight">项目</span>计划，包括时间线和里程碑...</div>
+                    </div>
+                    <div class="search-result">
+                        <div class="result-title">UI 设计评审</div>
+                        <div class="result-path">画布 > 设计</div>
+                        <div class="result-preview">对新的用户界面<span class="highlight">设计</span>进行全面评审...</div>
+                    </div>
+                    <div class="search-result">
+                        <div class="result-title">代码重构</div>
+                        <div class="result-path">画布 > 开发</div>
+                        <div class="result-preview">重构核心模块的<span class="highlight">代码</span>结构，提高可维护性...</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 模板场景 -->
+            <div class="template-scene" id="templateScene">
+                <div class="template-categories">
+                    <div class="category-tag active">全部</div>
+                    <div class="category-tag">项目管理</div>
+                    <div class="category-tag">软件开发</div>
+                    <div class="category-tag">设计</div>
+                    <div class="category-tag">营销</div>
+                </div>
+                <div class="template-grid">
+                    <div class="template-card">
+                        <div class="template-title">敏捷开发冲刺</div>
+                        <div class="template-description">包含用户故事、任务分解、每日站会等完整的敏捷开发流程</div>
+                        <div class="template-meta">
+                            <span>12 个任务</span>
+                            <span>2-3 周</span>
+                        </div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-title">产品发布计划</div>
+                        <div class="template-description">从需求分析到产品上线的完整发布流程，包含测试和部署</div>
+                        <div class="template-meta">
+                            <span>18 个任务</span>
+                            <span>4-6 周</span>
+                        </div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-title">UI/UX 设计流程</div>
+                        <div class="template-description">用户研究、原型设计、视觉设计、可用性测试的完整设计流程</div>
+                        <div class="template-meta">
+                            <span>15 个任务</span>
+                            <span>3-4 周</span>
+                        </div>
+                    </div>
+                    <div class="template-card">
+                        <div class="template-title">内容营销策略</div>
+                        <div class="template-description">内容策划、创作、发布、推广的完整营销流程</div>
+                        <div class="template-meta">
+                            <span>10 个任务</span>
+                            <span>持续进行</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 工作流场景 -->
+            <div class="workflow-scene" id="workflowScene">
+                <div class="workflow-list">
+                    <div class="workflow-item">
+                        <div class="workflow-icon">🔄</div>
+                        <div class="workflow-content">
+                            <div class="workflow-title">自动化部署</div>
+                            <div class="workflow-description">代码提交 → 构建 → 测试 → 部署到生产环境</div>
+                        </div>
+                        <div class="workflow-status">就绪</div>
+                    </div>
+                    <div class="workflow-item">
+                        <div class="workflow-icon">📊</div>
+                        <div class="workflow-content">
+                            <div class="workflow-title">每周报告生成</div>
+                            <div class="workflow-description">收集数据 → 生成图表 → 发送邮件报告</div>
+                        </div>
+                        <div class="workflow-status">就绪</div>
+                    </div>
+                    <div class="workflow-item">
+                        <div class="workflow-icon">🧹</div>
+                        <div class="workflow-content">
+                            <div class="workflow-title">任务清理</div>
+                            <div class="workflow-description">标记完成的任务 → 归档 → 清理过期数据</div>
+                        </div>
+                        <div class="workflow-status">就绪</div>
+                    </div>
+                    <div class="workflow-item">
+                        <div class="workflow-icon">🔔</div>
+                        <div class="workflow-content">
+                            <div class="workflow-title">截止日期提醒</div>
+                            <div class="workflow-description">检查即将到期的任务 → 发送提醒通知</div>
+                        </div>
+                        <div class="workflow-status">就绪</div>
+                    </div>
+                    <div class="workflow-item">
+                        <div class="workflow-icon">📈</div>
+                        <div class="workflow-content">
+                            <div class="workflow-title">进度同步</div>
+                            <div class="workflow-description">更新项目进度 → 同步到团队看板 → 通知相关人员</div>
+                        </div>
+                        <div class="workflow-status">就绪</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置场景 -->
+            <div class="settings-scene" id="settingsScene">
+                <div class="settings-group">
+                    <div class="settings-group-title">界面设置</div>
+                    <div class="setting-item">
+                        <div class="setting-label">暗色主题</div>
+                        <div class="setting-toggle active"></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">毛玻璃效果</div>
+                        <div class="setting-toggle active"></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">动画效果</div>
+                        <div class="setting-toggle active"></div>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-group-title">AI 助手</div>
+                    <div class="setting-item">
+                        <div class="setting-label">智能建议</div>
+                        <div class="setting-toggle active"></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">上下文感知</div>
+                        <div class="setting-toggle active"></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">自动完成</div>
+                        <div class="setting-toggle"></div>
+                    </div>
+                </div>
+                <div class="settings-group">
+                    <div class="settings-group-title">快捷键</div>
+                    <div class="setting-item">
+                        <div class="setting-label">全局快捷键</div>
+                        <div class="setting-toggle active"></div>
+                    </div>
+                    <div class="setting-item">
+                        <div class="setting-label">Vim 模式</div>
+                        <div class="setting-toggle"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 帮助场景 -->
+            <div class="help-scene" id="helpScene">
+                <div class="help-content">
+                    <div class="help-section">
+                        <div class="help-title">快捷键</div>
+                        <div class="help-shortcuts">
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">打开指令面板</div>
+                                <div class="shortcut-keys">⌘ K</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">关闭面板</div>
+                                <div class="shortcut-keys">Esc</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">上下导航</div>
+                                <div class="shortcut-keys">↑ ↓</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">选择项目</div>
+                                <div class="shortcut-keys">Enter</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">创建新任务</div>
+                                <div class="shortcut-keys">⌘ N</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="help-section">
+                        <div class="help-title">场景切换</div>
+                        <div class="help-shortcuts">
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">AI 助手</div>
+                                <div class="shortcut-keys">/ai</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">全局搜索</div>
+                                <div class="shortcut-keys">/search</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">模板库</div>
+                                <div class="shortcut-keys">/template</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">工作流</div>
+                                <div class="shortcut-keys">/workflow</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">设置</div>
+                                <div class="shortcut-keys">/settings</div>
+                            </div>
+                            <div class="shortcut-item">
+                                <div class="shortcut-description">帮助</div>
+                                <div class="shortcut-keys">/help</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 快捷键提示 -->
+        <div class="keyboard-hints">
+            <div class="hint-group">
+                <div class="hint">
+                    <span class="key">↑↓</span>
+                    <span>导航</span>
+                </div>
+                <div class="hint">
+                    <span class="key">↵</span>
+                    <span>选择</span>
+                </div>
+                <div class="hint">
+                    <span class="key">⌘K</span>
+                    <span>唤起</span>
+                </div>
+            </div>
+            <div class="hint-group">
+                <div class="hint">
+                    <span class="key">Esc</span>
+                    <span>关闭</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class CommandPalette {
+            constructor() {
+                this.isOpen = false;
+                this.currentScene = 'default';
+                this.selectedIndex = 0;
+                this.suggestions = [];
+                
+                this.initElements();
+                this.bindEvents();
+                this.loadSuggestions();
+            }
+
+            initElements() {
+                this.overlay = document.getElementById('glassOverlay');
+                this.palette = document.getElementById('commandPalette');
+                this.searchInput = document.getElementById('searchInput');
+                this.sceneIndicator = document.getElementById('sceneIndicator');
+                this.expandableContent = document.getElementById('expandableContent');
+                
+                // 场景元素
+                this.defaultScene = document.getElementById('defaultScene');
+                this.aiScene = document.getElementById('aiScene');
+                this.searchScene = document.getElementById('searchScene');
+                this.templateScene = document.getElementById('templateScene');
+                this.workflowScene = document.getElementById('workflowScene');
+                this.settingsScene = document.getElementById('settingsScene');
+                this.helpScene = document.getElementById('helpScene');
+                
+                this.chatInput = document.getElementById('chatInput');
+            }
+
+            bindEvents() {
+                // 全局快捷键
+                document.addEventListener('keydown', (e) => {
+                    if (e.metaKey && e.key === 'k') {
+                        e.preventDefault();
+                        this.toggle();
+                    } else if (e.key === 'Escape' && this.isOpen) {
+                        this.close();
+                    }
+                });
+
+                // 背景点击关闭
+                this.overlay.addEventListener('click', () => this.close());
+
+                // 搜索输入处理
+                this.searchInput.addEventListener('input', (e) => {
+                    this.handleInput(e.target.value);
+                });
+
+                this.searchInput.addEventListener('keydown', (e) => {
+                    this.handleKeyNavigation(e);
+                });
+
+                // AI 聊天输入
+                this.chatInput.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendChatMessage(e.target.value);
+                        e.target.value = '';
+                    }
+                });
+
+                // 模板分类点击事件
+                document.querySelectorAll('.category-tag').forEach(tag => {
+                    tag.addEventListener('click', (e) => {
+                        document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.filterTemplates(e.target.textContent);
+                    });
+                });
+
+                // 设置切换事件
+                document.querySelectorAll('.setting-toggle').forEach(toggle => {
+                    toggle.addEventListener('click', (e) => {
+                        e.target.classList.toggle('active');
+                    });
+                });
+
+                // 模板卡片点击事件
+                document.querySelectorAll('.template-card').forEach(card => {
+                    card.addEventListener('click', (e) => {
+                        this.applyTemplate(card.querySelector('.template-title').textContent);
+                    });
+                });
+
+                // 工作流项点击事件
+                document.querySelectorAll('.workflow-item').forEach(item => {
+                    item.addEventListener('click', (e) => {
+                        this.executeWorkflow(item.querySelector('.workflow-title').textContent);
+                    });
+                });
+            }
+
+            toggle() {
+                if (this.isOpen) {
+                    this.close();
+                } else {
+                    this.open();
+                }
+            }
+
+            open() {
+                this.isOpen = true;
+                this.overlay.classList.add('active');
+                this.palette.classList.add('active');
+                
+                setTimeout(() => {
+                    this.searchInput.focus();
+                }, 100);
+            }
+
+            close() {
+                this.isOpen = false;
+                this.overlay.classList.remove('active');
+                this.palette.classList.remove('active', 'expanded');
+                this.searchInput.value = '';
+                this.currentScene = 'default';
+                this.updateSceneIndicator();
+                this.hideAllScenes();
+            }
+
+            handleInput(value) {
+                const trimmedValue = value.trim();
+                
+                // 检测场景前缀
+                if (trimmedValue.startsWith('/')) {
+                    this.detectAndSwitchScene(trimmedValue);
+                } else if (trimmedValue === '') {
+                    this.switchToScene('default');
+                } else {
+                    // 普通搜索
+                    this.switchToScene('search');
+                    this.performSearch(trimmedValue);
+                }
+            }
+
+            detectAndSwitchScene(input) {
+                const scenes = {
+                    '/ai': 'ai',
+                    '/search': 'search',
+                    '/template': 'template',
+                    '/workflow': 'workflow',
+                    '/settings': 'settings',
+                    '/help': 'help'
+                };
+
+                for (const [prefix, scene] of Object.entries(scenes)) {
+                    if (input.startsWith(prefix)) {
+                        this.switchToScene(scene);
+                        return;
+                    }
+                }
+            }
+
+            switchToScene(scene) {
+                if (this.currentScene === scene) return;
+
+                this.currentScene = scene;
+                this.updateSceneIndicator();
+                this.hideAllScenes();
+
+                if (scene === 'default') {
+                    this.palette.classList.remove('expanded');
+                    this.defaultScene.style.display = 'block';
+                } else {
+                    this.palette.classList.add('expanded');
+                    
+                    switch (scene) {
+                        case 'ai':
+                            this.aiScene.classList.add('active');
+                            setTimeout(() => this.chatInput.focus(), 100);
+                            break;
+                        case 'search':
+                            this.searchScene.classList.add('active');
+                            break;
+                        case 'template':
+                            this.templateScene.classList.add('active');
+                            break;
+                        case 'workflow':
+                            this.workflowScene.classList.add('active');
+                            break;
+                        case 'settings':
+                            this.settingsScene.classList.add('active');
+                            break;
+                        case 'help':
+                            this.helpScene.classList.add('active');
+                            break;
+                    }
+                }
+            }
+
+            hideAllScenes() {
+                this.defaultScene.style.display = 'none';
+                this.aiScene.classList.remove('active');
+                this.searchScene.classList.remove('active');
+                this.templateScene.classList.remove('active');
+                this.workflowScene.classList.remove('active');
+                this.settingsScene.classList.remove('active');
+                this.helpScene.classList.remove('active');
+            }
+
+            updateSceneIndicator() {
+                const sceneNames = {
+                    'default': '默认',
+                    'ai': 'AI 助手',
+                    'search': '搜索',
+                    'template': '模板',
+                    'workflow': '工作流',
+                    'settings': '设置',
+                    'help': '帮助'
+                };
+
+                this.sceneIndicator.textContent = sceneNames[this.currentScene] || '默认';
+                
+                if (this.currentScene !== 'default') {
+                    this.sceneIndicator.classList.add('visible');
+                } else {
+                    this.sceneIndicator.classList.remove('visible');
+                }
+            }
+
+            handleKeyNavigation(e) {
+                if (this.currentScene !== 'default') return;
+
+                const items = this.defaultScene.querySelectorAll('.suggestion-item');
+                
+                switch (e.key) {
+                    case 'ArrowDown':
+                        e.preventDefault();
+                        this.selectedIndex = Math.min(this.selectedIndex + 1, items.length - 1);
+                        this.updateSelection(items);
+                        break;
+                    case 'ArrowUp':
+                        e.preventDefault();
+                        this.selectedIndex = Math.max(this.selectedIndex - 1, 0);
+                        this.updateSelection(items);
+                        break;
+                    case 'Enter':
+                        e.preventDefault();
+                        this.executeSelectedItem(items[this.selectedIndex]);
+                        break;
+                }
+            }
+
+            updateSelection(items) {
+                items.forEach((item, index) => {
+                    item.classList.toggle('selected', index === this.selectedIndex);
+                });
+            }
+
+            executeSelectedItem(item) {
+                const shortcut = item.querySelector('.suggestion-shortcut').textContent;
+                
+                if (shortcut.startsWith('/')) {
+                    this.searchInput.value = shortcut + ' ';
+                    this.handleInput(this.searchInput.value);
+                } else {
+                    // 执行其他操作
+                    console.log('执行操作:', item.querySelector('.suggestion-title').textContent);
+                    this.close();
+                }
+            }
+
+            performSearch(query) {
+                // 模拟搜索结果
+                const results = [
+                    {
+                        title: `包含 "${query}" 的任务 1`,
+                        path: '画布 > 项目管理',
+                        preview: `这是一个包含 ${query} 关键词的任务描述...`
+                    },
+                    {
+                        title: `相关任务 2`,
+                        path: '画布 > 开发',
+                        preview: `另一个与 ${query} 相关的任务内容...`
+                    }
+                ];
+
+                this.renderSearchResults(results, query);
+            }
+
+            renderSearchResults(results, query) {
+                const container = document.getElementById('searchResults');
+                container.innerHTML = '';
+
+                results.forEach(result => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result';
+                    
+                    const highlightedPreview = result.preview.replace(
+                        new RegExp(query, 'gi'),
+                        `<span class="highlight">$&</span>`
+                    );
+
+                    item.innerHTML = `
+                        <div class="result-title">${result.title}</div>
+                        <div class="result-path">${result.path}</div>
+                        <div class="result-preview">${highlightedPreview}</div>
+                    `;
+
+                    container.appendChild(item);
+                });
+            }
+
+            sendChatMessage(message) {
+                if (!message.trim()) return;
+
+                const messagesContainer = document.getElementById('chatMessages');
+                
+                // 添加用户消息
+                const userMessage = document.createElement('div');
+                userMessage.className = 'chat-message user';
+                userMessage.textContent = message;
+                messagesContainer.appendChild(userMessage);
+
+                // 模拟 AI 回复
+                setTimeout(() => {
+                    const aiMessage = document.createElement('div');
+                    aiMessage.className = 'chat-message assistant';
+                    aiMessage.textContent = `我理解你想要 "${message}"。让我帮你创建相关的任务或提供建议。`;
+                    messagesContainer.appendChild(aiMessage);
+                    
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                }, 1000);
+
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+
+            loadSuggestions() {
+                // 初始化建议列表
+                this.suggestions = [
+                    { title: 'AI 助手', shortcut: '/ai' },
+                    { title: '全局搜索', shortcut: '/search' },
+                    { title: '模板库', shortcut: '/template' },
+                    { title: '工作流', shortcut: '/workflow' },
+                    { title: '设置', shortcut: '/settings' },
+                    { title: '帮助', shortcut: '/help' },
+                    { title: '创建新任务', shortcut: '⌘N' }
+                ];
+            }
+
+            // 模板相关方法
+            filterTemplates(category) {
+                console.log('筛选模板分类:', category);
+                // 这里可以实现模板筛选逻辑
+            }
+
+            applyTemplate(templateName) {
+                console.log('应用模板:', templateName);
+                alert(`正在应用模板: ${templateName}`);
+                this.close();
+            }
+
+            // 工作流相关方法
+            executeWorkflow(workflowName) {
+                console.log('执行工作流:', workflowName);
+                alert(`正在执行工作流: ${workflowName}`);
+                this.close();
+            }
+        }
+
+        // 初始化指令面板
+        const commandPalette = new CommandPalette();
+
+        // 添加一些演示提示
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                alert('按 Cmd+K 唤起指令面板\n\n功能演示：\n• 输入 /ai 进入 AI 助手模式\n• 输入 /search 进入搜索模式\n• 输入 /template 查看模板库\n• 输入 /workflow 查看工作流\n• 输入 /settings 打开设置\n• 输入 /help 查看帮助\n• 输入普通文字进行搜索\n• 使用方向键导航，Enter 选择\n• 按 Esc 或点击背景关闭');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

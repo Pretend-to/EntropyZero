@@ -1,0 +1,58 @@
+{
+  "status": {
+    "todo": "待办",
+    "inProgress": "进行中",
+    "waiting": "等待",
+    "done": "已完成",
+    "blocked": "阻塞"
+  },
+  "priority": {
+    "low": "低优先级",
+    "medium": "中优先级",
+    "high": "高优先级",
+    "urgent": "紧急"
+  },
+  "fields": {
+    "title": "任务标题",
+    "description": "任务描述",
+    "status": "状态",
+    "priority": "优先级",
+    "dueDate": "截止日期",
+    "tags": "标签",
+    "assignee": "负责人",
+    "progress": "进度",
+    "subtasks": "子任务",
+    "dependencies": "依赖关系",
+    "notes": "备注"
+  },
+  "actions": {
+    "createTask": "创建任务",
+    "edit": "编辑",
+    "editTask": "编辑任务",
+    "deleteTask": "删除任务",
+    "duplicateTask": "复制任务",
+    "markComplete": "标记完成",
+    "markIncomplete": "标记未完成",
+    "addSubtask": "添加子任务",
+    "addDependency": "添加依赖",
+    "setDueDate": "设置截止日期",
+    "assignTo": "分配给",
+    "addTag": "添加标签",
+    "moveTask": "移动任务",
+    "more": "更多"
+  },
+  "placeholders": {
+    "taskTitle": "输入任务标题...",
+    "taskDescription": "描述这个任务的详细内容...",
+    "searchTasks": "搜索任务...",
+    "addNote": "添加备注..."
+  },
+  "messages": {
+    "taskCreated": "任务创建成功",
+    "taskUpdated": "任务更新成功",
+    "taskDeleted": "任务删除成功",
+    "taskCompleted": "任务标记为完成",
+    "noTasks": "暂无任务",
+    "noResults": "没有找到匹配的任务"
+  }
+}

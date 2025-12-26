@@ -1,0 +1,52 @@
+{
+  "app": {
+    "name": "EntropyZero",
+    "tagline": "Spatial Thinking Task Engine",
+    "description": "Next-generation task management system based on local-first philosophy"
+  },
+  "actions": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "filter": "Filter",
+    "sort": "Sort",
+    "export": "Export",
+    "import": "Import",
+    "settings": "Settings",
+    "help": "Help",
+    "close": "Close",
+    "confirm": "Confirm",
+    "back": "Back",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish"
+  },
+  "time": {
+    "now": "Now",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "tomorrow": "Tomorrow",
+    "thisWeek": "This Week",
+    "lastWeek": "Last Week",
+    "nextWeek": "Next Week",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "nextMonth": "Next Month",
+    "ago": "{{time}} ago",
+    "in": "in {{time}}",
+    "minutes": "minutes",
+    "hours": "hours",
+    "days": "days",
+    "weeks": "weeks",
+    "months": "months",
+    "years": "years"
+  },
+  "languages": {
+    "zh-CN": "Simplified Chinese",
+    "en-US": "English",
+    "ja-JP": "Japanese"
+  }
+}

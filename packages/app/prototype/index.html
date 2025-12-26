@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EntropyZero - 原型导航</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            line-height: 1.6;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .subtitle {
+            color: #a0a0a0;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+        
+        .prototype-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+        
+        .prototype-card {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+        }
+        
+        .prototype-card:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.15);
+        }
+        
+        .prototype-card h3 {
+            color: #3b82f6;
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+        }
+        
+        .prototype-card p {
+            color: #a0a0a0;
+            font-size: 0.9rem;
+        }
+        
+        .status {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+        
+        .status.ready {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+        
+        .status.wip {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .features {
+            background: #1a1a1a;
+            border-radius: 12px;
+            padding: 2rem;
+            border: 1px solid #2a2a2a;
+        }
+        
+        .features h2 {
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        .features ul {
+            list-style: none;
+        }
+        
+        .features li {
+            padding: 0.5rem 0;
+            color: #a0a0a0;
+        }
+        
+        .features li:before {
+            content: "✓";
+            color: #10b981;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 EntropyZero</h1>
+        <p class="subtitle">空间思维任务引擎 - 原型展示</p>
+        
+        <div class="prototype-grid">
+            <a href="./主画布.html" class="prototype-card">
+                <h3>主画布 (Canvas View)</h3>
+                <p>无限画布上的任务节点展示，支持拖拽、缩放和空间化管理</p>
+                <span class="status ready">Ready</span>
+            </a>
+            
+            <a href="./指令框.html" class="prototype-card">
+                <h3>智能指令框 (Command Palette)</h3>
+                <p>全键盘驱动的操作界面，支持任务创建、搜索和AI辅助</p>
+                <span class="status ready">Ready</span>
+            </a>
+            
+            <a href="./任务节点.html" class="prototype-card">
+                <h3>任务节点 (Task Node)</h3>
+                <p>单个任务的详细展示，包含状态、描述、标签和时间信息</p>
+                <span class="status ready">Ready</span>
+            </a>
+            
+            <a href="./侧边栏.html" class="prototype-card">
+                <h3>侧边栏 (Sidebar)</h3>
+                <p>项目管理、标签分类和设置面板的集合界面</p>
+                <span class="status ready">Ready</span>
+            </a>
+            
+            <a href="./移动端.html" class="prototype-card">
+                <h3>移动端适配</h3>
+                <p>针对移动设备优化的界面布局和交互方式</p>
+                <span class="status wip">WIP</span>
+            </a>
+            
+            <a href="./设置页面.html" class="prototype-card">
+                <h3>设置页面</h3>
+                <p>主题切换、快捷键配置和数据同步设置</p>
+                <span class="status wip">WIP</span>
+            </a>
+        </div>
+        
+        <div class="features">
+            <h2>原型特性</h2>
+            <ul>
+                <li>基于 HTML/CSS/JS 的可交互原型</li>
+                <li>深色主题设计，符合现代审美</li>
+                <li>响应式布局，支持多设备预览</li>
+                <li>模拟真实的用户交互流程</li>
+                <li>可直接用于用户测试和反馈收集</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

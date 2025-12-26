@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>侧边栏 - EntropyZero</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            height: 100vh;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 320px;
+            background: #1a1a1a;
+            border-right: 1px solid #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #2a2a2a;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        
+        .logo-icon {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+        }
+        
+        .logo-text {
+            font-size: 1.2rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            color: #ffffff;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        
+        .sidebar-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem 0;
+        }
+        
+        .section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .section-title {
+            color: #6b7280;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .section-action {
+            background: transparent;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            padding: 0.25rem;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        
+        .section-action:hover {
+            color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+        
+        .nav-list {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: #a0a0a0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-radius: 0;
+            position: relative;
+        }
+        
+        .nav-link:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .nav-link.active {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+            border-right: 3px solid #3b82f6;
+        }
+        
+        .nav-icon {
+            font-size: 1rem;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .nav-text {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+        
+        .nav-count {
+            background: #3a3a3a;
+            color: #a0a0a0;
+            padding: 0.2rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        
+        .nav-link.active .nav-count {
+            background: rgba(59, 130, 246, 0.3);
+            color: #3b82f6;
+        }
+        
+        .tag-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 1.5rem;
+            color: #a0a0a0;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+        }
+        
+        .tag-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            color: #3b82f6;
+        }
+        
+        .tag-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .tag-red { background: #ef4444; }
+        .tag-orange { background: #f59e0b; }
+        .tag-blue { background: #3b82f6; }
+        .tag-green { background: #10b981; }
+        .tag-purple { background: #8b5cf6; }
+        
+        .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #2a2a2a;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: #2a2a2a;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .user-profile:hover {
+            background: #3a3a3a;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .user-info {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 0.1rem;
+        }
+        
+        .user-status {
+            font-size: 0.75rem;
+            color: #6b7280;
+        }
+        
+        .main-content {
+            flex: 1;
+            background: #0a0a0a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+        }
+        
+        .collapsible {
+            cursor: pointer;
+        }
+        
+        .collapsible .section-title::after {
+            content: '▼';
+            font-size: 0.7rem;
+            margin-left: auto;
+            transition: transform 0.2s ease;
+        }
+        
+        .collapsible.collapsed .section-title::after {
+            transform: rotate(-90deg);
+        }
+        
+        .collapsible.collapsed + .nav-list {
+            display: none;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .quick-action {
+            flex: 1;
+            background: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            color: #a0a0a0;
+            padding: 0.75rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        
+        .quick-action:hover {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        
+        /* 滚动条样式 */
+        .sidebar-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sidebar-content::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .sidebar-content::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+            border-radius: 3px;
+        }
+        
+        .sidebar-content::-webkit-scrollbar-thumb:hover {
+            background: #4a4a4a;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <div class="logo-icon">🚀</div>
+                <div class="logo-text">EntropyZero</div>
+            </div>
+            
+            <div class="search-box">
+                <div class="search-icon">🔍</div>
+                <input type="text" class="search-input" placeholder="搜索任务、项目...">
+            </div>
+        </div>
+        
+        <div class="sidebar-content">
+            <div class="section">
+                <div class="quick-actions">
+                    <button class="quick-action">➕ 新任务</button>
+                    <button class="quick-action">📋 新项目</button>
+                </div>
+            </div>
+            
+            <div class="section">
+                <div class="section-header collapsible">
+                    <div class="section-title">
+                        📁 项目
+                    </div>
+                    <button class="section-action">+</button>
+                </div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link active">
+                            <span class="nav-icon">🎯</span>
+                            <span class="nav-text">EntropyZero 开发</span>
+                            <span class="nav-count">12</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📋</span>
+                            <span class="nav-text">个人任务</span>
+                            <span class="nav-count">5</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">💼</span>
+                            <span class="nav-text">工作项目</span>
+                            <span class="nav-count">8</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">🗂️</span>
+                            <span class="nav-text">归档项目</span>
+                            <span class="nav-count">23</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <div class="section-header collapsible">
+                    <div class="section-title">
+                        📊 视图
+                    </div>
+                </div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">🗓️</span>
+                            <span class="nav-text">今天</span>
+                            <span class="nav-count">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📅</span>
+                            <span class="nav-text">本周</span>
+                            <span class="nav-count">7</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">⭐</span>
+                            <span class="nav-text">重要任务</span>
+                            <span class="nav-count">4</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">🔥</span>
+                            <span class="nav-text">紧急任务</span>
+                            <span class="nav-count">2</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">✅</span>
+                            <span class="nav-text">已完成</span>
+                            <span class="nav-count">45</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <div class="section-header collapsible">
+                    <div class="section-title">
+                        🏷️ 标签
+                    </div>
+                    <button class="section-action">+</button>
+                </div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="tag-item">
+                            <span class="tag-color tag-red"></span>
+                            <span class="nav-text">重要</span>
+                            <span class="nav-count">6</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="tag-item">
+                            <span class="tag-color tag-orange"></span>
+                            <span class="nav-text">紧急</span>
+                            <span class="nav-count">3</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="tag-item">
+                            <span class="tag-color tag-blue"></span>
+                            <span class="nav-text">开发</span>
+                            <span class="nav-count">8</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="tag-item">
+                            <span class="tag-color tag-green"></span>
+                            <span class="nav-text">设计</span>
+                            <span class="nav-count">4</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="tag-item">
+                            <span class="tag-color tag-purple"></span>
+                            <span class="nav-text">学习</span>
+                            <span class="nav-count">5</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="section">
+                <div class="section-header collapsible">
+                    <div class="section-title">
+                        ⚙️ 设置
+                    </div>
+                </div>
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">🎨</span>
+                            <span class="nav-text">主题设置</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">⌨️</span>
+                            <span class="nav-text">快捷键</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">☁️</span>
+                            <span class="nav-text">数据同步</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">🔔</span>
+                            <span class="nav-text">通知设置</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link">
+                            <span class="nav-icon">📊</span>
+                            <span class="nav-text">数据统计</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <div class="user-avatar">H</div>
+                <div class="user-info">
+                    <div class="user-name">瀚熙</div>
+                    <div class="user-status">在线</div>
+                </div>
+                <div style="color: #6b7280;">⚙️</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div>
+            <h2>主内容区域</h2>
+            <p>这里是主画布或其他内容区域</p>
+        </div>
+    </div>
+    
+    <script>
+        // 折叠功能
+        document.querySelectorAll('.collapsible').forEach(header => {
+            header.addEventListener('click', () => {
+                header.classList.toggle('collapsed');
+            });
+        });
+        
+        // 导航链接激活状态
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                
+                // 移除所有激活状态
+                document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+                
+                // 添加当前激活状态
+                link.classList.add('active');
+            });
+        });
+        
+        // 搜索功能
+        const searchInput = document.querySelector('.search-input');
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            
+            document.querySelectorAll('.nav-link, .tag-item').forEach(item => {
+                const text = item.querySelector('.nav-text').textContent.toLowerCase();
+                const parent = item.closest('.nav-item');
+                
+                if (text.includes(query)) {
+                    parent.style.display = 'block';
+                } else {
+                    parent.style.display = query ? 'none' : 'block';
+                }
+            });
+        });
+        
+        // 快速操作按钮
+        document.querySelectorAll('.quick-action').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const action = btn.textContent.trim();
+                alert(`执行操作: ${action}`);
+            });
+        });
+        
+        // 添加按钮
+        document.querySelectorAll('.section-action').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const section = btn.closest('.section');
+                const sectionTitle = section.querySelector('.section-title').textContent.trim();
+                alert(`添加新的 ${sectionTitle}`);
+            });
+        });
+        
+        // 用户配置文件
+        document.querySelector('.user-profile').addEventListener('click', () => {
+            alert('打开用户设置');
+        });
+        
+        // 键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.metaKey || e.ctrlKey) {
+                switch (e.key) {
+                    case 'n':
+                        e.preventDefault();
+                        alert('创建新任务');
+                        break;
+                    case 'f':
+                        e.preventDefault();
+                        searchInput.focus();
+                        break;
+                    case 'b':
+                        e.preventDefault();
+                        alert('切换侧边栏');
+                        break;
+                }
+            }
+        });
+    </script>
+</body>
+</html>

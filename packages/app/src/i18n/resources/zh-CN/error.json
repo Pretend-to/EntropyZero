@@ -1,0 +1,38 @@
+{
+  "network": {
+    "offline": "网络连接已断开",
+    "timeout": "请求超时，请重试",
+    "serverError": "服务器错误，请稍后重试",
+    "notFound": "请求的资源不存在",
+    "unauthorized": "未授权访问",
+    "forbidden": "访问被拒绝"
+  },
+  "validation": {
+    "required": "此字段为必填项",
+    "minLength": "至少需要 {{min}} 个字符",
+    "maxLength": "不能超过 {{max}} 个字符",
+    "invalidEmail": "请输入有效的邮箱地址",
+    "invalidDate": "请输入有效的日期",
+    "invalidUrl": "请输入有效的网址"
+  },
+  "task": {
+    "titleRequired": "任务标题不能为空",
+    "titleTooLong": "任务标题不能超过 100 个字符",
+    "descriptionTooLong": "任务描述不能超过 1000 个字符",
+    "invalidDueDate": "截止日期不能早于今天",
+    "circularDependency": "检测到循环依赖，无法添加此依赖关系",
+    "maxSubtasks": "子任务数量不能超过 50 个"
+  },
+  "file": {
+    "uploadFailed": "文件上传失败",
+    "fileTooLarge": "文件大小不能超过 {{maxSize}}",
+    "invalidFileType": "不支持的文件类型",
+    "corruptedFile": "文件已损坏，无法读取"
+  },
+  "general": {
+    "unknownError": "发生未知错误",
+    "operationFailed": "操作失败，请重试",
+    "permissionDenied": "权限不足",
+    "sessionExpired": "会话已过期，请重新登录"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "app": {
+    "name": "EntropyZero",
+    "tagline": "空间思维任务引擎",
+    "description": "基于本地优先理念的新一代任务管理系统"
+  },
+  "actions": {
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "edit": "编辑",
+    "create": "创建",
+    "search": "搜索",
+    "filter": "筛选",
+    "sort": "排序",
+    "export": "导出",
+    "import": "导入",
+    "settings": "设置",
+    "help": "帮助",
+    "close": "关闭",
+    "confirm": "确认",
+    "back": "返回",
+    "next": "下一步",
+    "previous": "上一步",
+    "finish": "完成"
+  },
+  "time": {
+    "now": "现在",
+    "today": "今天",
+    "yesterday": "昨天",
+    "tomorrow": "明天",
+    "thisWeek": "本周",
+    "lastWeek": "上周",
+    "nextWeek": "下周",
+    "thisMonth": "本月",
+    "lastMonth": "上月",
+    "nextMonth": "下月",
+    "ago": "{{time}}前",
+    "in": "{{time}}后",
+    "minutes": "分钟",
+    "hours": "小时",
+    "days": "天",
+    "weeks": "周",
+    "months": "月",
+    "years": "年"
+  },
+  "languages": {
+    "zh-CN": "简体中文",
+    "en-US": "英文",
+    "ja-JP": "日文"
+  }
+}

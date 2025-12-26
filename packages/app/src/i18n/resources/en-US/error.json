@@ -1,0 +1,38 @@
+{
+  "network": {
+    "offline": "Network connection lost",
+    "timeout": "Request timeout, please try again",
+    "serverError": "Server error, please try again later",
+    "notFound": "Requested resource not found",
+    "unauthorized": "Unauthorized access",
+    "forbidden": "Access denied"
+  },
+  "validation": {
+    "required": "This field is required",
+    "minLength": "Must be at least {{min}} characters",
+    "maxLength": "Cannot exceed {{max}} characters",
+    "invalidEmail": "Please enter a valid email address",
+    "invalidDate": "Please enter a valid date",
+    "invalidUrl": "Please enter a valid URL"
+  },
+  "task": {
+    "titleRequired": "Task title cannot be empty",
+    "titleTooLong": "Task title cannot exceed 100 characters",
+    "descriptionTooLong": "Task description cannot exceed 1000 characters",
+    "invalidDueDate": "Due date cannot be earlier than today",
+    "circularDependency": "Circular dependency detected, cannot add this dependency",
+    "maxSubtasks": "Cannot have more than 50 subtasks"
+  },
+  "file": {
+    "uploadFailed": "File upload failed",
+    "fileTooLarge": "File size cannot exceed {{maxSize}}",
+    "invalidFileType": "Unsupported file type",
+    "corruptedFile": "File is corrupted and cannot be read"
+  },
+  "general": {
+    "unknownError": "An unknown error occurred",
+    "operationFailed": "Operation failed, please try again",
+    "permissionDenied": "Insufficient permissions",
+    "sessionExpired": "Session expired, please log in again"
+  }
+}

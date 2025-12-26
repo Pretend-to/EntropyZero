@@ -1,0 +1,305 @@
+.task-node {
+  position: absolute;
+  background: var(--bg-secondary);
+  border: 2px solid;
+  border-radius: var(--radius-xl);
+  padding: var(--space-lg);
+  min-width: 200px;
+  max-width: 300px;
+  cursor: move;
+  /* 只对非位置属性应用 transition，避免拖拽延迟 */
+  transition: 
+    background-color var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base),
+    transform var(--transition-base);
+  box-shadow: var(--shadow-lg);
+  user-select: none;
+}
+
+/* 拖拽状态下禁用所有 transition */
+.task-node--dragging {
+  transition: none !important;
+}
+
+.task-node--dragging * {
+  transition: none !important;
+}
+
+.task-node:hover {
+  transform: scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+.task-node--selected {
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  border-color: var(--accent-secondary) !important;
+}
+
+/* 连接点 */
+.task-node__connection-points {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.connection-point {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: currentColor;
+  border-radius: var(--radius-full);
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  pointer-events: auto;
+  cursor: crosshair;
+}
+
+.task-node:hover .connection-point {
+  opacity: 1;
+}
+
+.connection-point--top {
+  top: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.connection-point--right {
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.connection-point--bottom {
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.connection-point--left {
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* 任务头部 */
+.task-node__header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.task-node__status {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.status-indicator {
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-icon {
+  color: var(--bg-secondary);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+}
+
+.status-progress {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  background: var(--bg-secondary);
+  border-radius: var(--radius-full);
+}
+
+.task-node__title {
+  flex: 1;
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-base);
+  color: var(--text-primary);
+  line-height: 1.4;
+}
+
+.task-node__priority {
+  font-size: var(--font-size-xs);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.priority--high {
+  background: rgba(239, 68, 68, 0.2);
+  color: var(--error);
+}
+
+.priority--low {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--accent-primary);
+}
+
+.priority--urgent {
+  background: rgba(245, 158, 11, 0.2);
+  color: var(--warning);
+}
+
+/* 任务描述 */
+.task-node__description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.5;
+  margin-bottom: var(--space-lg);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 进度条 */
+.task-node__progress {
+  width: 100%;
+  height: 4px;
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-lg);
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  border-radius: var(--radius-sm);
+  transition: width var(--transition-slow);
+}
+
+/* 子任务 */
+.task-node__subtasks {
+  margin-bottom: var(--space-lg);
+}
+
+.subtask {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) 0;
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.subtask--completed {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.subtask__checkbox {
+  accent-color: currentColor;
+  margin: 0;
+}
+
+.subtask__title {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.subtask-more {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  padding: var(--space-xs) 0;
+}
+
+/* 标签 */
+.task-node__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-lg);
+}
+
+.task-tag {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-primary);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+}
+
+.task-tag--more {
+  background: var(--bg-tertiary);
+  color: var(--text-tertiary);
+}
+
+/* 任务底部 */
+.task-node__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border-primary);
+}
+
+.task-node__date {
+  color: var(--text-tertiary);
+  font-size: var(--font-size-xs);
+}
+
+.due-date {
+  color: var(--warning);
+}
+
+.task-node__actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.action-btn {
+  background: transparent;
+  border: 1px solid var(--border-secondary);
+  color: var(--text-secondary);
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  font-size: var(--font-size-xs);
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.action-btn:hover {
+  border-color: currentColor;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
+}
+
+/* 状态特定样式 */
+.task-node--done {
+  opacity: 0.8;
+}
+
+.task-node--done .task-node__title {
+  text-decoration: line-through;
+}
+
+.task-node--blocked {
+  border-style: dashed;
+}
+
+.task-node--waiting {
+  opacity: 0.9;
+}

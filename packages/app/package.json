@@ -1,0 +1,33 @@
+{
+  "name": "@entropy-zero/app",
+  "version": "1.0.0",
+  "description": "EntropyZero 前端应用",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "i18n:extract": "i18next-scanner --config i18next-scanner.config.js"
+  },
+  "dependencies": {
+    "dexie": "^3.2.7",
+    "framer-motion": "^10.16.0",
+    "i18next": "^23.16.8",
+    "i18next-browser-languagedetector": "^7.2.0",
+    "i18next-http-backend": "^2.4.0",
+    "rbush": "^3.0.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^13.5.0",
+    "zustand": "^4.5.7"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.3",
+    "i18next-scanner": "^4.4.0",
+    "vite": "^4.4.5",
+    "vite-plugin-pwa": "^1.2.0"
+  }
+}

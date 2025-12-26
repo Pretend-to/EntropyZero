@@ -1,0 +1,38 @@
+{
+  "network": {
+    "offline": "ネットワーク接続が失われました",
+    "timeout": "リクエストがタイムアウトしました。再試行してください",
+    "serverError": "サーバーエラーが発生しました。後でもう一度お試しください",
+    "notFound": "要求されたリソースが見つかりません",
+    "unauthorized": "認証されていないアクセス",
+    "forbidden": "アクセスが拒否されました"
+  },
+  "validation": {
+    "required": "この項目は必須です",
+    "minLength": "最低{{min}}文字必要です",
+    "maxLength": "{{max}}文字を超えることはできません",
+    "invalidEmail": "有効なメールアドレスを入力してください",
+    "invalidDate": "有効な日付を入力してください",
+    "invalidUrl": "有効なURLを入力してください"
+  },
+  "task": {
+    "titleRequired": "タスクタイトルは空にできません",
+    "titleTooLong": "タスクタイトルは100文字を超えることはできません",
+    "descriptionTooLong": "タスク説明は1000文字を超えることはできません",
+    "invalidDueDate": "期限は今日より前にすることはできません",
+    "circularDependency": "循環依存が検出されました。この依存関係を追加できません",
+    "maxSubtasks": "サブタスクは50個を超えることはできません"
+  },
+  "file": {
+    "uploadFailed": "ファイルのアップロードに失敗しました",
+    "fileTooLarge": "ファイルサイズは{{maxSize}}を超えることはできません",
+    "invalidFileType": "サポートされていないファイルタイプです",
+    "corruptedFile": "ファイルが破損しており、読み取れません"
+  },
+  "general": {
+    "unknownError": "不明なエラーが発生しました",
+    "operationFailed": "操作に失敗しました。再試行してください",
+    "permissionDenied": "権限が不足しています",
+    "sessionExpired": "セッションが期限切れです。再度ログインしてください"
+  }
+}

@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务节点 - EntropyZero</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            margin-bottom: 2rem;
+            color: #3b82f6;
+        }
+        
+        .node-showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .task-node {
+            background: #1a1a1a;
+            border: 2px solid;
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .task-node::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: currentColor;
+        }
+        
+        .task-node:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* 不同状态的样式 */
+        .status-todo {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+        
+        .status-progress {
+            border-color: #10b981;
+            color: #10b981;
+        }
+        
+        .status-waiting {
+            border-color: #f59e0b;
+            color: #f59e0b;
+        }
+        
+        .status-done {
+            border-color: #6b7280;
+            color: #6b7280;
+        }
+        
+        .status-blocked {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+        
+        .task-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .task-status {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            margin-right: 0.75rem;
+            background: currentColor;
+            position: relative;
+        }
+        
+        .status-progress .task-status::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            background: #1a1a1a;
+            border-radius: 50%;
+        }
+        
+        .status-done .task-status::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #1a1a1a;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        .task-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #ffffff;
+            flex: 1;
+        }
+        
+        .task-priority {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        
+        .priority-high {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+        
+        .priority-medium {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+        
+        .priority-low {
+            background: rgba(59, 130, 246, 0.2);
+            color: #3b82f6;
+        }
+        
+        .task-description {
+            color: #a0a0a0;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        
+        .task-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .task-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+        }
+        
+        .tag {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            padding: 0.3rem 0.6rem;
+            border-radius: 16px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .tag.tag-urgent {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+        }
+        
+        .tag.tag-work {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+        }
+        
+        .tag.tag-personal {
+            background: rgba(139, 92, 246, 0.15);
+            color: #a78bfa;
+        }
+        
+        .task-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #2a2a2a;
+        }
+        
+        .task-date {
+            color: #6b7280;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        
+        .task-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .action-btn {
+            background: transparent;
+            border: 1px solid #3a3a3a;
+            color: #a0a0a0;
+            padding: 0.4rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+        
+        .action-btn:hover {
+            border-color: currentColor;
+            color: #ffffff;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: #2a2a2a;
+            border-radius: 2px;
+            margin: 0.5rem 0;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: currentColor;
+            border-radius: 2px;
+            transition: width 0.3s ease;
+        }
+        
+        .subtasks {
+            margin-top: 1rem;
+        }
+        
+        .subtask {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.3rem 0;
+            font-size: 0.85rem;
+            color: #a0a0a0;
+        }
+        
+        .subtask input[type="checkbox"] {
+            accent-color: currentColor;
+        }
+        
+        .subtask.completed {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        
+        .node-variants {
+            margin-top: 3rem;
+        }
+        
+        .node-variants h2 {
+            margin-bottom: 1rem;
+            color: #ffffff;
+        }
+        
+        .compact-node {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+        }
+        
+        .compact-node:hover {
+            border-color: #3b82f6;
+            background: #1f1f1f;
+        }
+        
+        .compact-status {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #3b82f6;
+        }
+        
+        .compact-title {
+            flex: 1;
+            font-size: 0.9rem;
+        }
+        
+        .compact-date {
+            color: #6b7280;
+            font-size: 0.75rem;
+        }
+        
+        .connection-points {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: currentColor;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+        
+        .task-node:hover .connection-points {
+            opacity: 1;
+        }
+        
+        .connection-top {
+            top: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .connection-right {
+            right: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        
+        .connection-bottom {
+            bottom: -4px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .connection-left {
+            left: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 任务节点设计展示</h1>
+        
+        <div class="node-showcase">
+            <!-- 待办任务 -->
+            <div class="task-node status-todo">
+                <div class="connection-points connection-top"></div>
+                <div class="connection-points connection-right"></div>
+                <div class="connection-points connection-bottom"></div>
+                <div class="connection-points connection-left"></div>
+                
+                <div class="task-header">
+                    <div class="task-status"></div>
+                    <div class="task-title">实现画布渲染引擎</div>
+                    <div class="task-priority priority-high">高优先级</div>
+                </div>
+                
+                <div class="task-description">
+                    基于 Canvas API 实现无限画布功能，支持缩放、平移和高性能渲染。需要处理大量节点的视口裁剪和空间索引优化。
+                </div>
+                
+                <div class="task-meta">
+                    <div class="task-tags">
+                        <span class="tag">开发</span>
+                        <span class="tag tag-urgent">核心功能</span>
+                        <span class="tag">Canvas</span>
+                    </div>
+                </div>
+                
+                <div class="subtasks">
+                    <div class="subtask">
+                        <input type="checkbox" checked>
+                        <span class="completed">研究 Canvas API 最佳实践</span>
+                    </div>
+                    <div class="subtask">
+                        <input type="checkbox">
+                        <span>实现基础的平移和缩放</span>
+                    </div>
+                    <div class="subtask">
+                        <input type="checkbox">
+                        <span>添加视口裁剪优化</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 30%;"></div>
+                </div>
+                
+                <div class="task-footer">
+                    <div class="task-date">
+                        📅 2024-01-18
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn">✏️</button>
+                        <button class="action-btn">🔗</button>
+                        <button class="action-btn">⋯</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 进行中任务 -->
+            <div class="task-node status-progress">
+                <div class="task-header">
+                    <div class="task-status"></div>
+                    <div class="task-title">完成 UI/UX 设计文档</div>
+                    <div class="task-priority priority-medium">中优先级</div>
+                </div>
+                
+                <div class="task-description">
+                    编写详细的界面设计规范，包括组件库、交互流程和视觉风格指南。确保开发团队能够准确实现设计意图。
+                </div>
+                
+                <div class="task-meta">
+                    <div class="task-tags">
+                        <span class="tag">设计</span>
+                        <span class="tag tag-work">文档</span>
+                        <span class="tag">UI/UX</span>
+                    </div>
+                </div>
+                
+                <div class="progress-bar">
+                    <div class="progress-fill" style="width: 75%;"></div>
+                </div>
+                
+                <div class="task-footer">
+                    <div class="task-date">
+                        📅 2024-01-15
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn">✏️</button>
+                        <button class="action-btn">🔗</button>
+                        <button class="action-btn">⋯</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 等待任务 -->
+            <div class="task-node status-waiting">
+                <div class="task-header">
+                    <div class="task-status"></div>
+                    <div class="task-title">用户测试反馈收集</div>
+                    <div class="task-priority priority-low">低优先级</div>
+                </div>
+                
+                <div class="task-description">
+                    等待原型完成后，邀请目标用户进行可用性测试，收集反馈并优化产品体验。
+                </div>
+                
+                <div class="task-meta">
+                    <div class="task-tags">
+                        <span class="tag">测试</span>
+                        <span class="tag tag-personal">用户研究</span>
+                    </div>
+                </div>
+                
+                <div class="task-footer">
+                    <div class="task-date">
+                        ⏳ 等待前置任务
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn">✏️</button>
+                        <button class="action-btn">🔗</button>
+                        <button class="action-btn">⋯</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 已完成任务 -->
+            <div class="task-node status-done">
+                <div class="task-header">
+                    <div class="task-status"></div>
+                    <div class="task-title">项目需求分析</div>
+                </div>
+                
+                <div class="task-description">
+                    深入分析用户痛点，确定产品核心功能和技术实现方案。已完成竞品分析和技术选型。
+                </div>
+                
+                <div class="task-meta">
+                    <div class="task-tags">
+                        <span class="tag">分析</span>
+                        <span class="tag">需求</span>
+                    </div>
+                </div>
+                
+                <div class="task-footer">
+                    <div class="task-date">
+                        ✅ 2024-01-10 完成
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn">👁️</button>
+                        <button class="action-btn">📋</button>
+                        <button class="action-btn">⋯</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 阻塞任务 -->
+            <div class="task-node status-blocked">
+                <div class="task-header">
+                    <div class="task-status"></div>
+                    <div class="task-title">集成第三方 AI 服务</div>
+                    <div class="task-priority priority-high">高优先级</div>
+                </div>
+                
+                <div class="task-description">
+                    接入 OpenAI API 实现智能任务拆解功能。当前被 API 配额限制阻塞，需要升级服务计划。
+                </div>
+                
+                <div class="task-meta">
+                    <div class="task-tags">
+                        <span class="tag tag-urgent">阻塞</span>
+                        <span class="tag">AI</span>
+                        <span class="tag">集成</span>
+                    </div>
+                </div>
+                
+                <div class="task-footer">
+                    <div class="task-date">
+                        🚫 API 配额限制
+                    </div>
+                    <div class="task-actions">
+                        <button class="action-btn">✏️</button>
+                        <button class="action-btn">🔓</button>
+                        <button class="action-btn">⋯</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 简化任务节点 -->
+            <div class="task-node status-todo" style="padding: 1rem;">
+                <div class="task-header" style="margin-bottom: 0.5rem;">
+                    <div class="task-status" style="width: 12px; height: 12px;"></div>
+                    <div class="task-title" style="font-size: 0.95rem;">快速任务创建</div>
+                </div>
+                
+                <div class="task-description" style="font-size: 0.8rem; margin-bottom: 0.5rem;">
+                    简化版本的任务节点，适用于快速创建和概览。
+                </div>
+                
+                <div class="task-tags">
+                    <span class="tag" style="font-size: 0.7rem;">简化</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="node-variants">
+            <h2>📋 紧凑列表视图</h2>
+            
+            <div class="compact-node">
+                <div class="compact-status" style="background: #3b82f6;"></div>
+                <div class="compact-title">实现拖拽功能</div>
+                <div class="compact-date">今天</div>
+            </div>
+            
+            <div class="compact-node">
+                <div class="compact-status" style="background: #10b981;"></div>
+                <div class="compact-title">优化性能</div>
+                <div class="compact-date">明天</div>
+            </div>
+            
+            <div class="compact-node">
+                <div class="compact-status" style="background: #6b7280;"></div>
+                <div class="compact-title">编写测试用例</div>
+                <div class="compact-date">已完成</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 任务节点交互演示
+        document.querySelectorAll('.task-node').forEach(node => {
+            // 点击编辑
+            node.addEventListener('dblclick', () => {
+                const title = node.querySelector('.task-title');
+                const currentText = title.textContent;
+                
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = currentText;
+                input.style.background = 'transparent';
+                input.style.border = '1px solid #3b82f6';
+                input.style.color = 'inherit';
+                input.style.font = 'inherit';
+                input.style.width = '100%';
+                input.style.borderRadius = '4px';
+                input.style.padding = '0.2rem';
+                
+                title.replaceWith(input);
+                input.focus();
+                input.select();
+                
+                const finishEdit = () => {
+                    const newTitle = document.createElement('div');
+                    newTitle.className = 'task-title';
+                    newTitle.textContent = input.value || currentText;
+                    input.replaceWith(newTitle);
+                };
+                
+                input.addEventListener('blur', finishEdit);
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') finishEdit();
+                    if (e.key === 'Escape') {
+                        input.value = currentText;
+                        finishEdit();
+                    }
+                });
+            });
+            
+            // 状态切换
+            const status = node.querySelector('.task-status');
+            status.addEventListener('click', (e) => {
+                e.stopPropagation();
+                
+                const states = ['todo', 'progress', 'waiting', 'done', 'blocked'];
+                const currentState = node.className.match(/status-(\w+)/)[1];
+                const currentIndex = states.indexOf(currentState);
+                const nextIndex = (currentIndex + 1) % states.length;
+                const nextState = states[nextIndex];
+                
+                node.className = node.className.replace(/status-\w+/, `status-${nextState}`);
+            });
+        });
+        
+        // 子任务切换
+        document.querySelectorAll('.subtask input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const subtask = e.target.closest('.subtask');
+                subtask.classList.toggle('completed', e.target.checked);
+                
+                // 更新进度条
+                const node = e.target.closest('.task-node');
+                const checkboxes = node.querySelectorAll('.subtask input[type="checkbox"]');
+                const checked = node.querySelectorAll('.subtask input[type="checkbox"]:checked');
+                const progress = (checked.length / checkboxes.length) * 100;
+                
+                const progressFill = node.querySelector('.progress-fill');
+                if (progressFill) {
+                    progressFill.style.width = progress + '%';
+                }
+            });
+        });
+        
+        // 操作按钮
+        document.querySelectorAll('.action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const action = btn.textContent;
+                
+                switch (action) {
+                    case '✏️':
+                        alert('编辑任务');
+                        break;
+                    case '🔗':
+                        alert('创建连接');
+                        break;
+                    case '👁️':
+                        alert('查看详情');
+                        break;
+                    case '📋':
+                        alert('复制任务');
+                        break;
+                    case '🔓':
+                        alert('解除阻塞');
+                        break;
+                    default:
+                        alert('更多操作');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,58 @@
+{
+  "status": {
+    "todo": "To Do",
+    "inProgress": "In Progress",
+    "waiting": "Waiting",
+    "done": "Done",
+    "blocked": "Blocked"
+  },
+  "priority": {
+    "low": "Low Priority",
+    "medium": "Medium Priority",
+    "high": "High Priority",
+    "urgent": "Urgent"
+  },
+  "fields": {
+    "title": "Task Title",
+    "description": "Task Description",
+    "status": "Status",
+    "priority": "Priority",
+    "dueDate": "Due Date",
+    "tags": "Tags",
+    "assignee": "Assignee",
+    "progress": "Progress",
+    "subtasks": "Subtasks",
+    "dependencies": "Dependencies",
+    "notes": "Notes"
+  },
+  "actions": {
+    "createTask": "Create Task",
+    "edit": "Edit",
+    "editTask": "Edit Task",
+    "deleteTask": "Delete Task",
+    "duplicateTask": "Duplicate Task",
+    "markComplete": "Mark Complete",
+    "markIncomplete": "Mark Incomplete",
+    "addSubtask": "Add Subtask",
+    "addDependency": "Add Dependency",
+    "setDueDate": "Set Due Date",
+    "assignTo": "Assign To",
+    "addTag": "Add Tag",
+    "moveTask": "Move Task",
+    "more": "More"
+  },
+  "placeholders": {
+    "taskTitle": "Enter task title...",
+    "taskDescription": "Describe the details of this task...",
+    "searchTasks": "Search tasks...",
+    "addNote": "Add a note..."
+  },
+  "messages": {
+    "taskCreated": "Task created successfully",
+    "taskUpdated": "Task updated successfully",
+    "taskDeleted": "Task deleted successfully",
+    "taskCompleted": "Task marked as complete",
+    "noTasks": "No tasks yet",
+    "noResults": "No matching tasks found"
+  }
+}

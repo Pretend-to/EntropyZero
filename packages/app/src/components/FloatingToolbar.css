@@ -1,0 +1,97 @@
+.floating-toolbar {
+  position: absolute;
+  top: var(--space-xl);
+  right: var(--space-xl);
+  background: rgba(26, 26, 26, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  z-index: 100;
+  box-shadow: var(--shadow-lg);
+}
+
+.toolbar-btn {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  padding: var(--space-sm);
+  border-radius: var(--radius-lg);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-sm);
+  min-width: 40px;
+  height: 40px;
+  justify-content: center;
+}
+
+.toolbar-btn:hover:not(.toolbar-btn--disabled) {
+  background: var(--accent-primary);
+  border-color: var(--accent-primary);
+  color: var(--text-primary);
+  transform: translateY(-1px);
+}
+
+.toolbar-btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toolbar-btn__icon {
+  font-size: var(--font-size-base);
+}
+
+.toolbar-btn__label {
+  font-size: var(--font-size-xs);
+  white-space: nowrap;
+  display: none;
+}
+
+.toolbar-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--border-primary);
+  margin: 0 var(--space-xs);
+}
+
+/* 展开状态显示标签 */
+.floating-toolbar:hover .toolbar-btn__label {
+  display: block;
+}
+
+.floating-toolbar:hover .toolbar-btn {
+  min-width: auto;
+  padding: var(--space-sm) var(--space-lg);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .floating-toolbar {
+    top: var(--space-lg);
+    right: var(--space-lg);
+    flex-direction: column;
+    padding: var(--space-xs);
+  }
+  
+  .toolbar-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: var(--space-xs);
+  }
+  
+  .toolbar-btn__label {
+    display: none !important;
+  }
+  
+  .toolbar-divider {
+    width: 24px;
+    height: 1px;
+    margin: var(--space-xs) 0;
+  }
+}

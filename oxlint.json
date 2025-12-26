@@ -1,0 +1,13 @@
+{
+  "rules": {
+    "typescript/no-unused-vars": "error",
+    "typescript/no-explicit-any": "warn",
+    "react/jsx-uses-react": "off",
+    "react/react-in-jsx-scope": "off"
+  },
+  "env": {
+    "browser": true,
+    "node": true,
+    "es2022": true
+  }
+}
