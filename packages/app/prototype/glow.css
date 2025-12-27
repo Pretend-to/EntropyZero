@@ -1,0 +1,91 @@
+/* --- 核心样式：复制这段 CSS 即可 --- */
+
+.rgb-glow {
+    /* 1. 基础卡片设置 */
+    position: relative;
+    background-color: #101010; /* 卡片背景色 */
+    border-radius: 20px;       /* 圆角 */
+    overflow: hidden;          /* 隐藏溢出，保证光效在框内 */
+    z-index: 0;                /* 建立层级上下文 */
+    
+    /* 2. 默认居中排版 (可选，根据需要保留) */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    
+    /* 3. 视觉深度 */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05); /* 极细物理边线增加质感 */
+}
+
+/* 定义旋转动画 */
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* 
+   核心层级 1：锐利边框 (The Border) 
+   位于卡片下方，比卡片大一点点
+*/
+.rgb-glow::before {
+    content: '';
+    position: absolute;
+    z-index: -2;
+    /* 负值 inset 控制边框粗细，-2px 就是 2px 边框 */
+    inset: -2px; 
+    /* 300% 尺寸确保旋转时覆盖圆角 */
+    width: 300%; 
+    height: 300%;
+    /* 居中定位 */
+    top: 50%; 
+    left: 50%; 
+    translate: -50% -50%;
+    
+    background: conic-gradient(
+        from 0deg, 
+        #ff0055, #ff9900, #ffe600, #33ff00, #00aaff, #7a00ff, #ff0055
+    );
+    animation: rotate 4s linear infinite;
+    opacity: 0; /* 默认隐藏，hover时显示 */
+    transition: opacity 0.5s;
+}
+
+/* 
+   核心层级 2：内部柔和光晕 (The Inner Glow) 
+   位于卡片上方，利用 Mask 实现“中间透、边缘亮”
+*/
+.rgb-glow::after {
+    content: '';
+    position: absolute;
+    z-index: -1; /* 在背景之上，但在内容之下 */
+    inset: 0;    /* 填满卡片 */
+    
+    background: conic-gradient(
+        from 0deg, 
+        #ff0055, #ff9900, #ffe600, #33ff00, #00aaff, #7a00ff, #ff0055
+    );
+    animation: rotate 4s linear infinite;
+    
+    /* 关键：高斯模糊 + 径向蒙版 */
+    filter: blur(20px); 
+    /* 中间是透明的(看不到光)，边缘是黑色的(看得到光) */
+    -webkit-mask: radial-gradient(circle at center, transparent 30%, black 100%);
+    mask: radial-gradient(circle at center, transparent 30%, black 100%);
+    
+    opacity: 0;
+    transition: opacity 0.5s;
+}
+
+/* 交互状态：鼠标悬停时点亮 */
+.rgb-glow:hover::before,
+.rgb-glow:hover::after {
+    opacity: 1;
+}
+
+/* 交互状态：卡片轻微放大 */
+.rgb-glow:hover {
+    transform: scale(1.02);
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}

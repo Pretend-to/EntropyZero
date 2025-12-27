@@ -1,163 +1,105 @@
-# 前端组件文档 (`packages/app/src`)
+**EntropyZero 前端组件文档**
 
-EntropyZero 的前端应用基于 React 和 TypeScript 构建，遵循模块化和组件化的开发原则。本文档将概述当前前端应用的基本结构，并为未来的组件开发和文档编写提供指导。
+本组件文档旨在规范 EntropyZero 前端项目中组件的设计和使用，提高代码的可复用性和可维护性。
 
-## 1. 应用核心结构
+**1. 组件分类**
 
-### `packages/app/src/main.tsx`
+组件按照其功能和复杂度，分为以下几类：
 
-这是前端应用的入口文件。它负责渲染根组件 `App` 到 DOM 中。
+* **原子组件（Atoms）**：最小的、不可再分割的 UI 元素，例如按钮、文本框、图标等。
+* **分子组件（Molecules）**：由多个原子组件组合而成，例如搜索框、标签、状态指示器等。
+* **组织组件（Organisms）**：由多个原子组件、分子组件或其它组织组件组合而成，形成一个独立的 UI 区域，例如任务节点、侧边栏菜单、指令框等。
+* **模板组件（Templates）**：定义页面的整体结构和布局，例如主画布视图、侧边栏布局等。
+* **页面组件（Pages）**：由一个或多个模板组件和组织组件组合而成，构成一个完整的页面，例如应用根组件。
 
-```typescript
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
+**2. 组件目录结构**
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
-)
+```
+src/
+└── UI/                     # 可复用的 UI 组件 (原子/分子/组织)
+    ├── Button/             # 原子组件：按钮
+    │   ├── Button.tsx      # 按钮组件
+    │   └── Button.module.css # 按钮样式
+    ├── Input/              # 原子组件：输入框
+    │   ├── Input.tsx
+    │   └── Input.module.css
+    ├── Icon/               # 原子组件：图标
+    │   ├── Icon.tsx
+    │   └── Icon.module.css
+    ├── Tag/                # 分子组件：标签
+    │   ├── Tag.tsx
+    │   └── Tag.module.css
+    ├── StatusIndicator/    # 分子组件：状态指示器
+    │   ├── StatusIndicator.tsx
+    │   └── StatusIndicator.module.css
+    ├── TaskNode/           # 组织组件：任务节点
+    │   ├── TaskNode.tsx
+    │   └── TaskNode.module.css
+    └── ...
+
+└── components/             # 复杂的业务组件 (视图/页面级)
+    ├── CanvasView.tsx      # 模板组件：主画布视图
+    ├── Sidebar.tsx         # 组织组件：侧边栏
+    ├── CommandPalette.tsx  # 组织组件：指令框
+    └── ...
 ```
 
-### `packages/app/src/App.tsx`
+**3. 核心组件列表及职责**
 
-`App.tsx` 是应用的根组件。在项目初期，它包含了一个简单的计数器示例作为占位符，演示了 React 的基本状态管理 (`useState`)。
+以下列出部分核心组件及其职责，后续开发中可以根据实际情况进行补充和调整。
 
-**目的**: 作为应用的顶层容器，未来将负责路由管理、全局状态提供、布局结构以及加载其他主要视图组件。
+| 组件名称            | 类型 | 职责                                           | 备注                                                                        |
+| ------------------- | ---- | ---------------------------------------------- | --------------------------------------------------------------------------- |
+| `Button`          | 原子 | 按钮组件，用于触发用户操作。                   | 支持不同类型（primary, secondary, text）、大小和状态（disabled, loading）。 |
+| `Input`           | 原子 | 输入框组件，用于接收用户输入。                 | 支持不同类型（text, number, password）、大小和状态（disabled, error）。     |
+| `Icon`            | 原子 | 图标组件，用于展示图标。                       | 使用 SVG 图标，支持自定义大小和颜色。                                       |
+| `Tag`             | 分子 | 标签组件，用于展示分类或标记。                 | 支持不同颜色和大小。                                                        |
+| `StatusIndicator` | 分子 | 状态指示器组件，用于展示任务状态。             | 颜色和图标根据状态而变化。                                                  |
+| `TaskNode`        | 组织 | 任务节点组件，用于在画布上展示单个任务的信息。 | 包含状态指示器、标题、描述、标签和时间信息，支持编辑和拖拽。                |
+| `CanvasView`      | 模板 | 主画布视图组件，负责无限画布的渲染和交互。     | 使用 Canvas API 实现高性能渲染，支持缩放、平移、惯性滚动和视口裁剪。        |
+| `Sidebar`         | 组织 | 侧边栏组件，用于项目管理和导航。               | 包含项目列表、标签管理和设置面板，支持折叠和展开。                          |
+| `CommandPalette`  | 组织 | 指令框组件，提供全局的、键盘驱动的操作入口。   | 支持创建任务、搜索任务、AI 辅助和导航等指令。                               |
+| `ContextMenu`     | 组织 | 右键菜单，为画布和节点提供上下文操作。         | 根据点击位置和目标，动态展示不同的操作选项。                                |
+| `SettingsPanel`   | 组织 | 设置面板，用于配置应用设置。                   | 包含主题切换、快捷键设置、数据同步设置和语言设置等。                        |
+| `LocaleSwitcher`  | 分子 | 语言切换器，用于切换应用语言。                 | 使用下拉菜单展示支持的语言列表。                                            |
 
-**示例代码 (简化)**:
-```typescript
-import { useState } from 'react'
-import './App.css'
+**4. 组件设计原则**
 
-function App() {
-  const [count, setCount] = useState(0)
+* **单一职责**：每个组件只负责一个明确的功能，避免组件过于复杂。
+* **可复用性**：组件应该具有良好的可复用性，可以在不同的场景中使用。
+* **可配置性**：组件应该提供足够的配置选项，以满足不同的需求。
+* **可访问性**：组件应该符合可访问性标准，确保所有用户都可以使用。
+* **性能**：组件应该具有良好的性能，避免影响应用的整体性能。
+* **样式隔离**: 确保组件的样式不会影响到其他组件，推荐使用 CSS Modules。
 
-  return (
-    <div className="App">
-      <h1>EntropyZero</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          空间思维任务引擎 - 基于本地优先理念的新一代任务管理系统
-        </p>
-      </div>
-    </div>
-  )
-}
+**5. 组件开发规范**
 
-export default App
-```
+* **组件命名**：组件文件名使用 PascalCase 命名，例如 `TaskNode.tsx`。
+* **组件代码**：组件代码应该清晰易懂，包含必要的注释。
+* **组件文档**：每个组件应该包含详细的文档，说明组件的功能、使用方法和配置选项。
+* **Props 类型**：组件的 Props 应该使用 TypeScript 定义类型，并进行必要的类型检查。
+* **状态管理**: 尽可能使用函数式组件和 Hooks，避免使用 Class 组件。 使用 Zustand 管理全局状态，并通过 props 将状态传递给子组件。
 
-### `packages/app/src/UI/` 目录
+**6. 主题和样式**
 
-此目录旨在存放应用中所有可复用的 UI 组件。目前，它仅包含一个 `.gitkeep` 文件作为占位符。
+* 使用 CSS Modules 隔离组件样式。
+* 利用 CSS 变量实现主题切换。
+* 提供深色和浅色主题，并提供高对比度模式。
+* 确保所有组件都能够正确显示在不同的主题下。
 
-**目的**: 遵循原子设计原则，将小的、独立的 UI 元素（如按钮、输入框、卡片等）和更复杂的复合组件（如模态框、侧边栏、任务节点）组织在此处。这将促进组件的复用、提高开发效率和维护性。
+**7. 国际化**
 
-**未来结构建议**:
-```
-UI/
-├── Button/
-│   ├── Button.tsx
-│   └── Button.module.css
-├── TaskNode/
-│   ├── TaskNode.tsx
-│   ├── TaskNode.types.ts
-│   └── TaskNode.module.css
-├── Sidebar/
-│   ├── Sidebar.tsx
-│   └── Sidebar.module.css
-└── index.ts // 导出所有组件，方便统一导入
-```
+* 所有组件的文本内容都应该支持国际化。
+* 使用 `i18next` 提供的 `useTranslation` Hook 获取翻译文本。
+* 确保所有组件都能够正确显示在不同的语言下。
 
-### `packages/app/src/services/` 目录
+**8. 事件处理**
 
-此目录用于存放与业务逻辑无关的、可复用的服务模块，例如 `aiConfigService.ts`。
+* 组件应该通过回调函数（props）将事件传递给父组件。
+* 避免在组件内部直接处理事件，将事件处理逻辑交给父组件。
 
-**目的**: 封装数据获取、状态管理、外部 API 交互等横切关注点，保持组件的纯粹性（只关注 UI 渲染）。
+**9. 提交和维护**
 
-## 2. 组件文档编写指南 (未来开发)
-
-当新的 React 组件被创建时，请遵循以下约定来编写其文档，以便于团队成员理解、使用和维护。
-
-### 2.1. 文档位置
-
-每个组件的文档应放在其自身的目录下，例如 `UI/ComponentName/README.md`，或者直接在组件文件 (`ComponentName.tsx`) 内部通过 JSDoc 风格的注释进行描述。
-
-### 2.2. 文档内容结构
-
-建议组件文档包含以下部分：
-
-#### 组件名称 (`<ComponentName />`)
-
-简明扼要地说明组件的名称。
-
-#### 目的 (Purpose)
-
-*   组件的用途是什么？
-*   它解决了什么问题？
-*   在应用中扮演什么角色？
-
-#### Props
-
-列出组件接收的所有 `props`，包括类型、是否可选、默认值以及详细说明。
-
-```typescript
-interface ComponentNameProps {
-  /**
-   * @property {string} title - 组件的标题。
-   */
-  title: string;
-  /**
-   * @property {boolean} [isDisabled=false] - 是否禁用组件。
-   */
-  isDisabled?: boolean;
-  /**
-   * @property {() => void} onClick - 点击事件的回调函数。
-   */
-  onClick: () => void;
-}
-```
-
-#### State (如果适用)
-
-描述组件内部管理的状态及其用途。
-
-#### 使用示例 (Usage Example)
-
-提供一个或多个代码示例，演示如何在其他组件中使用该组件。
-
-```tsx
-import { ComponentName } from '../UI/ComponentName';
-
-function ParentComponent() {
-  const handleClick = () => {
-    console.log('Component clicked!');
-  };
-
-  return (
-    <div>
-      <ComponentName title="我的标题" onClick={handleClick} />
-      <ComponentName title="禁用组件" isDisabled={true} onClick={handleClick} />
-    </div>
-  );
-}
-```
-
-#### 样式 (Styling)
-
-*   说明组件如何应用样式（例如：CSS Modules, Tailwind CSS, styled-components）。
-*   如果提供自定义样式钩子（如 `className` prop），也应在此处说明。
-
-#### 依赖 (Dependencies)
-
-列出组件所依赖的任何外部库或内部组件。
-
----
-
-遵循上述结构和指南将有助于保持前端代码库的清晰和一致性，降低新成员的学习曲线，并提高团队协作效率。
+* 在提交组件之前，请确保组件通过了所有的测试。
+* 如果组件有任何问题，请及时修复并更新文档。
+* 如果需要对组件进行重大修改，请先与团队成员进行讨论。

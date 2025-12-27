@@ -1,0 +1,78 @@
+/* RainbowCard.css */
+
+.rainbow-card-root {
+  position: relative;
+  width: var(--rc-width);
+  height: var(--rc-height);
+  border-radius: var(--rc-border-radius);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: #000;
+  cursor: pointer;
+  background-color: #000;
+}
+
+/* 1. 底层旋转锐利边框 */
+.rainbow-card-root::before {
+  content: '';
+  position: absolute;
+  inset: -100%;
+  background: conic-gradient(from 0deg, #ff0055, #ffff00, #00aaff, #ff0055);
+  animation: rc-spin var(--rc-speed) linear infinite;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  z-index: 1;
+}
+
+/* 2. 主体黑色遮挡层 */
+.rainbow-card-root::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  background: #0a0a0a;
+  /* 自动计算内部圆角 */
+  border-radius: calc(var(--rc-border-radius) - 2px);
+  z-index: 2;
+}
+
+.rainbow-card-root:hover::before {
+  opacity: 1;
+}
+
+/* 3. 四边物理向内晕染层 */
+.rc-glow-edge {
+  position: absolute;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+  /* 使用变量控制模糊深度 */
+  filter: blur(var(--rc-glow-depth));
+}
+
+.rainbow-card-root:hover .rc-glow-edge {
+  opacity: 0.8;
+}
+
+.rc-edge-t { top: 0; left: 0; right: 0; height: 12px; background: linear-gradient(90deg, #ff0055, #ffff00, #00aaff, #ff0055); background-size: 200% 100%; animation: rc-flowX 3s linear infinite; }
+.rc-edge-b { bottom: 0; left: 0; right: 0; height: 12px; background: linear-gradient(90deg, #ff0055, #ffff00, #00aaff, #ff0055); background-size: 200% 100%; animation: rc-flowX 3s linear infinite reverse; }
+.rc-edge-l { top: 0; bottom: 0; left: 0; width: 12px; background: linear-gradient(180deg, #ff0055, #ffff00, #00aaff, #ff0055); background-size: 100% 200%; animation: rc-flowY 3s linear infinite reverse; }
+.rc-edge-r { top: 0; bottom: 0; right: 0; width: 12px; background: linear-gradient(180deg, #ff0055, #ffff00, #00aaff, #ff0055); background-size: 100% 200%; animation: rc-flowY 3s linear infinite; }
+
+@keyframes rc-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes rc-flowX { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+@keyframes rc-flowY { 0% { background-position: 0 0%; } 100% { background-position: 0 200%; } }
+
+.rc-inner-content {
+  position: relative;
+  z-index: 10;
+  color: white;
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.rainbow-card-root:hover .rc-inner-content {
+  transform: translateY(-4px);
+}
