@@ -6,92 +6,102 @@
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-primary);
   border-radius: var(--radius-xl);
-  padding: var(--space-sm);
+  padding: var(--space-xs); /* 稍微减少内边距，让按钮撑起空间 */
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
+  gap: 4px; /* 紧凑的间距 */
   z-index: 100;
   box-shadow: var(--shadow-lg);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .toolbar-btn {
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-secondary);
-  padding: var(--space-sm);
+  padding: 0 var(--space-sm); /* 水平 padding 固定 */
   border-radius: var(--radius-lg);
   cursor: pointer;
-  transition: all var(--transition-base);
   display: flex;
   align-items: center;
-  gap: var(--space-xs);
-  font-size: var(--font-size-sm);
-  min-width: 40px;
-  height: 40px;
   justify-content: center;
+  height: 40px;
+  min-width: 40px; /* 初始状态是正方形 */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: hidden; /* 必须，防止文字溢出 */
 }
 
+/* 悬浮单个按钮时的状态 */
 .toolbar-btn:hover:not(.toolbar-btn--disabled) {
   background: var(--accent-primary);
   border-color: var(--accent-primary);
   color: var(--text-primary);
-  transform: translateY(-1px);
+  padding: 0 var(--space-lg); /* 展开时增加内边距 */
+  /* 移除 transform: translateY(-1px); 避免微小的垂直位移影响点击精度 */
 }
 
 .toolbar-btn--disabled {
-  opacity: 0.5;
+  opacity: 0.3;
   cursor: not-allowed;
 }
 
 .toolbar-btn__icon {
   font-size: var(--font-size-base);
+  flex-shrink: 0; /* 确保图标不会因为挤压变形 */
 }
 
 .toolbar-btn__label {
   font-size: var(--font-size-xs);
   white-space: nowrap;
-  display: none;
+  
+  /* 核心动画属性 */
+  display: block; /* 废弃 display: none */
+  max-width: 0;
+  opacity: 0;
+  margin-left: 0;
+  transition: 
+    max-width 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.2s ease,
+    margin-left 0.3s ease;
+}
+
+/* 关键：只有当前按钮 Hover 时，内部的 Label 才展开 */
+.toolbar-btn:hover:not(.toolbar-btn--disabled) .toolbar-btn__label {
+  max-width: 120px; /* 给予足够大的宽度容纳文本 */
+  opacity: 1;
+  margin-left: var(--space-xs);
 }
 
 .toolbar-divider {
   width: 1px;
-  height: 24px;
+  height: 20px;
   background: var(--border-primary);
-  margin: 0 var(--space-xs);
+  margin: 0 4px;
+  flex-shrink: 0;
 }
 
-/* 展开状态显示标签 */
-.floating-toolbar:hover .toolbar-btn__label {
-  display: block;
-}
+/* 移除原有的全局 Hover 逻辑 */
+/* .floating-toolbar:hover .toolbar-btn__label { ... } 删掉 */
+/* .floating-toolbar:hover .toolbar-btn { ... } 删掉 */
 
-.floating-toolbar:hover .toolbar-btn {
-  min-width: auto;
-  padding: var(--space-sm) var(--space-lg);
-}
-
-/* 响应式设计 */
+/* 响应式设计：在小屏幕上彻底禁用展开效果 */
 @media (max-width: 768px) {
   .floating-toolbar {
     top: var(--space-lg);
     right: var(--space-lg);
     flex-direction: column;
-    padding: var(--space-xs);
+  }
+  
+  .toolbar-btn:hover .toolbar-btn__label {
+    max-width: 0 !important;
+    opacity: 0 !important;
+    margin-left: 0 !important;
   }
   
   .toolbar-btn {
-    min-width: 36px;
+    padding: 0 !important;
+    width: 36px;
     height: 36px;
-    padding: var(--space-xs);
-  }
-  
-  .toolbar-btn__label {
-    display: none !important;
-  }
-  
-  .toolbar-divider {
-    width: 24px;
-    height: 1px;
-    margin: var(--space-xs) 0;
+    min-width: 36px;
   }
 }
