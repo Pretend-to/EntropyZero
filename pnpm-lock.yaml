@@ -57,6 +57,9 @@ importers:
         specifier: ^4.5.7
         version: 4.5.7(@types/react@18.3.27)(react@18.3.1)
     devDependencies:
+      '@types/rbush':
+        specifier: ^4.0.0
+        version: 4.0.0
       '@types/react':
         specifier: ^18.2.0
         version: 18.3.27
@@ -1336,6 +1339,9 @@ packages:
 
   '@types/prop-types@15.7.15':
     resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
+
+  '@types/rbush@4.0.0':
+    resolution: {integrity: sha512-+N+2H39P8X+Hy1I5mC6awlTX54k3FhiUmvt7HWzGJZvF+syUAAxP/stwppS8JE84YHqFgRMv6fCy31202CMFxQ==}
 
   '@types/react-dom@18.3.7':
     resolution: {integrity: sha512-MEe3UeoENYVFXzoXEWsvcpg6ZvlrFNlOQ7EOsvhI3CfAXwzPfO8Qwuxd40nepsYKqyyVQnTdEfv68q91yLcKrQ==}
@@ -4332,6 +4338,8 @@ snapshots:
       undici-types: 6.21.0
 
   '@types/prop-types@15.7.15': {}
+
+  '@types/rbush@4.0.0': {}
 
   '@types/react-dom@18.3.7(@types/react@18.3.27)':
     dependencies:

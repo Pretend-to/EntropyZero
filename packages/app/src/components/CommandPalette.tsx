@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { useI18n } from '../hooks/useI18n'
 import { useUIStore } from '../stores/useUIStore'
 import { useTaskStore } from '../stores/useTaskStore'
+import { useTaskCreator } from '../hooks/useTaskCreator'
 import './CommandPalette.css'
+
+type SceneType = 'default' | 'ai' | 'search' | 'template' | 'workflow' | 'settings' | 'help'
 
 interface SuggestionItem {
   id: string
@@ -23,25 +26,131 @@ interface SuggestionGroup {
 const CommandPalette: React.FC = () => {
   const { t } = useI18n()
   const { commandPaletteOpen, setCommandPaletteOpen } = useUIStore()
-  const { tasks, addTask } = useTaskStore()
+  const { tasks } = useTaskStore()
+  const { createTaskAtCenter } = useTaskCreator()
 
   const [searchTerm, setSearchTerm] = useState('')
+  const [currentScene, setCurrentScene] = useState<SceneType>('default')
   const [filteredGroups, setFilteredGroups] = useState<SuggestionGroup[]>([])
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [chatMessages, setChatMessages] = useState<Array<{type: 'user' | 'assistant', content: string}>>([
+    { type: 'assistant', content: t('ui:commandPalette.aiWelcome') }
+  ])
+  const [isClosing, setIsClosing] = useState(false)
+  const [isEntering, setIsEntering] = useState(true)
   const inputRef = useRef<HTMLInputElement>(null)
   const suggestionsRef = useRef<HTMLDivElement>(null)
+  const chatInputRef = useRef<HTMLInputElement>(null)
 
   const handleClose = useCallback(() => {
-    setCommandPaletteOpen(false)
-    setSearchTerm('')
-    setSelectedIndex(0)
-  }, [setCommandPaletteOpen])
+    const shouldExpand = currentScene !== 'default' || searchTerm.trim() !== ''
+    
+    if (shouldExpand) {
+      // If expanded, first collapse then close
+      setIsClosing(true)
+      setSearchTerm('')
+      setCurrentScene('default')
+      
+      // Wait for collapse animation, then close
+      setTimeout(() => {
+        setCommandPaletteOpen(false)
+        setSelectedIndex(0)
+        setIsClosing(false)
+        setIsEntering(true) // Reset for next open
+      }, 300) // Match the collapse animation duration
+    } else {
+      // If not expanded, close directly with exit animation
+      setIsClosing(true)
+      
+      // Wait for exit animation, then close
+      setTimeout(() => {
+        setCommandPaletteOpen(false)
+        setSelectedIndex(0)
+        setIsClosing(false)
+        setIsEntering(true) // Reset for next open
+      }, 200) // Match the exit animation duration
+    }
+  }, [setCommandPaletteOpen, currentScene, searchTerm])
+
+  useEffect(() => {
+    if (commandPaletteOpen) {
+      // Reset entering state when opening
+      setIsEntering(true)
+      // Trigger enter animation after a brief delay
+      const timer = setTimeout(() => {
+        setIsEntering(false)
+      }, 10) // Very short delay to ensure initial render
+      
+      return () => clearTimeout(timer)
+    }
+  }, [commandPaletteOpen])
 
   useEffect(() => {
     if (commandPaletteOpen) {
       inputRef.current?.focus()
     }
   }, [commandPaletteOpen])
+
+  // Scene detection and switching
+  const detectAndSwitchScene = useCallback((input: string) => {
+    const scenes: Record<string, SceneType> = {
+      '/ai': 'ai',
+      '/search': 'search', 
+      '/template': 'template',
+      '/workflow': 'workflow',
+      '/settings': 'settings',
+      '/help': 'help'
+    }
+
+    for (const [prefix, scene] of Object.entries(scenes)) {
+      if (input.startsWith(prefix)) {
+        setCurrentScene(scene)
+        setSelectedIndex(0)
+        
+        // Focus appropriate input based on scene
+        if (scene === 'ai') {
+          setTimeout(() => chatInputRef.current?.focus(), 100)
+        }
+        return true
+      }
+    }
+    return false
+  }, [])
+
+  const handleInput = useCallback((value: string) => {
+    setSearchTerm(value)
+    const trimmedValue = value.trim()
+    
+    if (trimmedValue.startsWith('/')) {
+      if (!detectAndSwitchScene(trimmedValue)) {
+        // If no scene detected, stay in current scene
+      }
+    } else if (trimmedValue === '') {
+      setCurrentScene('default')
+    } else {
+      // Regular search
+      setCurrentScene('search')
+    }
+  }, [detectAndSwitchScene])
+
+  // Determine if palette should be expanded
+  const shouldExpand = currentScene !== 'default' || searchTerm.trim() !== ''
+
+  // Don't render if not open
+  if (!commandPaletteOpen) return null
+
+  const getSceneName = useCallback((scene: SceneType): string => {
+    const sceneNames: Record<SceneType, string> = {
+      'default': t('ui:commandPalette.sceneDefault'),
+      'ai': t('ui:commandPalette.sceneAI'),
+      'search': t('ui:commandPalette.sceneSearch'),
+      'template': t('ui:commandPalette.sceneTemplate'),
+      'workflow': t('ui:commandPalette.sceneWorkflow'),
+      'settings': t('ui:commandPalette.sceneSettings'),
+      'help': t('ui:commandPalette.sceneHelp')
+    }
+    return sceneNames[scene] || sceneNames.default
+  }, [t])
 
   const highlightText = (text: string, query: string) => {
     if (!query) return text
@@ -67,13 +176,7 @@ const CommandPalette: React.FC = () => {
           description: t('ui:commandPalette.createTaskDescription'),
           shortcut: '⌘N',
           action: () => {
-            addTask({
-              title: t('task.placeholders.taskTitle'),
-              status: 'todo',
-              priority: 'medium',
-              position: { x: 200, y: 200 },
-              tags: [],
-            })
+            createTaskAtCenter()
             handleClose()
           },
           type: 'command',
@@ -168,7 +271,12 @@ const CommandPalette: React.FC = () => {
 
   useEffect(() => {
     const filterSuggestions = () => {
-      if (!searchTerm) {
+      if (currentScene !== 'default' && currentScene !== 'search') {
+        setFilteredGroups([])
+        return
+      }
+
+      if (!searchTerm || currentScene === 'default') {
         setFilteredGroups(allSuggestions)
         return
       }
@@ -217,10 +325,31 @@ const CommandPalette: React.FC = () => {
     }
 
     filterSuggestions()
-  }, [searchTerm, tasks, t])
+  }, [searchTerm, tasks, t, currentScene])
 
   const handleKeyDown = useCallback(
     (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        
+        // In AI scene, return to main input instead of closing
+        if (currentScene === 'ai') {
+          setCurrentScene('default')
+          setSearchTerm('')
+          setTimeout(() => inputRef.current?.focus(), 100)
+          return
+        }
+        
+        // In other scenes, close the palette
+        handleClose()
+        return
+      }
+
+      if (currentScene === 'ai') {
+        // Let AI scene handle its own keyboard events (except Escape)
+        return
+      }
+
       const items = suggestionsRef.current?.querySelectorAll('.suggestion-item') || []
       if (items.length === 0) return
 
@@ -236,12 +365,9 @@ const CommandPalette: React.FC = () => {
           .flatMap((group) => group.items)
           .find((_, i) => i === selectedIndex)
         currentItem?.action()
-      } else if (e.key === 'Escape') {
-        e.preventDefault()
-        handleClose()
       }
     },
-    [filteredGroups, selectedIndex, handleClose]
+    [filteredGroups, selectedIndex, handleClose, currentScene, setCurrentScene, setSearchTerm]
   )
 
   useEffect(() => {
@@ -255,78 +381,282 @@ const CommandPalette: React.FC = () => {
     }
   }, [commandPaletteOpen, handleKeyDown])
 
+  // Don't render if not open
   if (!commandPaletteOpen) return null
+
+  const sendChatMessage = (message: string) => {
+    if (!message.trim()) return
+    
+    setChatMessages(prev => [
+      ...prev,
+      { type: 'user', content: message },
+      { type: 'assistant', content: t('ui:commandPalette.aiResponse', { query: message }) }
+    ])
+  }
+
+  const renderScene = () => {
+    switch (currentScene) {
+      case 'ai':
+        return (
+          <div className="ai-scene">
+            <div className="chat-messages">
+              {chatMessages.map((msg, index) => (
+                <div key={index} className={`chat-message ${msg.type}`}>
+                  {msg.content}
+                </div>
+              ))}
+            </div>
+            <input
+              ref={chatInputRef}
+              type="text"
+              className="chat-input"
+              placeholder={t('ui:commandPalette.aiInputPlaceholder')}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  sendChatMessage(e.currentTarget.value)
+                  e.currentTarget.value = ''
+                } else if (e.key === 'Escape') {
+                  // Return to main input instead of closing
+                  setCurrentScene('default')
+                  setSearchTerm('')
+                  setTimeout(() => inputRef.current?.focus(), 100)
+                }
+              }}
+            />
+          </div>
+        )
+
+      case 'search':
+        return (
+          <div className="search-scene">
+            <div className="search-results">
+              {tasks.slice(0, 5).map((task) => (
+                <div key={task.id} className="search-result">
+                  <div className="result-title">
+                    {renderHighlightedText(task.title, searchTerm)}
+                  </div>
+                  <div className="result-path">{t('ui:commandPalette.canvasPath')}</div>
+                  <div className="result-preview">
+                    {renderHighlightedText(task.description || '', searchTerm)}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )
+
+      case 'template':
+        return (
+          <div className="template-scene">
+            <div className="template-categories">
+              <div className="category-tag active">{t('ui:commandPalette.templateAll')}</div>
+              <div className="category-tag">{t('ui:commandPalette.templateProject')}</div>
+              <div className="category-tag">{t('ui:commandPalette.templateDev')}</div>
+              <div className="category-tag">{t('ui:commandPalette.templateDesign')}</div>
+            </div>
+            <div className="template-grid">
+              <div className="template-card">
+                <div className="template-title">{t('ui:commandPalette.templateAgile')}</div>
+                <div className="template-description">{t('ui:commandPalette.templateAgileDesc')}</div>
+                <div className="template-meta">
+                  <span>12 {t('ui:commandPalette.tasks')}</span>
+                  <span>2-3 {t('ui:commandPalette.weeks')}</span>
+                </div>
+              </div>
+              <div className="template-card">
+                <div className="template-title">{t('ui:commandPalette.templateRelease')}</div>
+                <div className="template-description">{t('ui:commandPalette.templateReleaseDesc')}</div>
+                <div className="template-meta">
+                  <span>18 {t('ui:commandPalette.tasks')}</span>
+                  <span>4-6 {t('ui:commandPalette.weeks')}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'workflow':
+        return (
+          <div className="workflow-scene">
+            <div className="workflow-list">
+              <div className="workflow-item">
+                <div className="workflow-icon">🔄</div>
+                <div className="workflow-content">
+                  <div className="workflow-title">{t('ui:commandPalette.workflowDeploy')}</div>
+                  <div className="workflow-description">{t('ui:commandPalette.workflowDeployDesc')}</div>
+                </div>
+                <div className="workflow-status">{t('ui:commandPalette.workflowReady')}</div>
+              </div>
+              <div className="workflow-item">
+                <div className="workflow-icon">📊</div>
+                <div className="workflow-content">
+                  <div className="workflow-title">{t('ui:commandPalette.workflowReport')}</div>
+                  <div className="workflow-description">{t('ui:commandPalette.workflowReportDesc')}</div>
+                </div>
+                <div className="workflow-status">{t('ui:commandPalette.workflowReady')}</div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'settings':
+        return (
+          <div className="settings-scene">
+            <div className="settings-group">
+              <div className="settings-group-title">{t('ui:commandPalette.settingsUI')}</div>
+              <div className="setting-item">
+                <div className="setting-label">{t('ui:commandPalette.settingsDarkMode')}</div>
+                <div className="setting-toggle active"></div>
+              </div>
+              <div className="setting-item">
+                <div className="setting-label">{t('ui:commandPalette.settingsGlass')}</div>
+                <div className="setting-toggle active"></div>
+              </div>
+            </div>
+            <div className="settings-group">
+              <div className="settings-group-title">{t('ui:commandPalette.settingsAI')}</div>
+              <div className="setting-item">
+                <div className="setting-label">{t('ui:commandPalette.settingsSmartSuggestions')}</div>
+                <div className="setting-toggle active"></div>
+              </div>
+            </div>
+          </div>
+        )
+
+      case 'help':
+        return (
+          <div className="help-scene">
+            <div className="help-content">
+              <div className="help-section">
+                <div className="help-title">{t('ui:commandPalette.helpShortcuts')}</div>
+                <div className="help-shortcuts">
+                  <div className="shortcut-item">
+                    <div className="shortcut-description">{t('ui:commandPalette.helpOpenPalette')}</div>
+                    <div className="shortcut-keys">⌘K</div>
+                  </div>
+                  <div className="shortcut-item">
+                    <div className="shortcut-description">{t('ui:commandPalette.helpClosePalette')}</div>
+                    <div className="shortcut-keys">Esc</div>
+                  </div>
+                  <div className="shortcut-item">
+                    <div className="shortcut-description">{t('ui:commandPalette.helpNavigation')}</div>
+                    <div className="shortcut-keys">↑↓</div>
+                  </div>
+                </div>
+              </div>
+              <div className="help-section">
+                <div className="help-title">{t('ui:commandPalette.helpScenes')}</div>
+                <div className="help-shortcuts">
+                  <div className="shortcut-item">
+                    <div className="shortcut-description">{t('ui:commandPalette.sceneAI')}</div>
+                    <div className="shortcut-keys">/ai</div>
+                  </div>
+                  <div className="shortcut-item">
+                    <div className="shortcut-description">{t('ui:commandPalette.sceneSearch')}</div>
+                    <div className="shortcut-keys">/search</div>
+                  </div>
+                  <div className="shortcut-item">
+                    <div className="shortcut-description">{t('ui:commandPalette.sceneTemplate')}</div>
+                    <div className="shortcut-keys">/template</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+
+      default:
+        return (
+          <div className="command-suggestions" ref={suggestionsRef}>
+            {filteredGroups.map((group) => (
+              <div key={group.id} className="suggestion-group">
+                <div className="suggestion-group-title">{group.title}</div>
+                {group.items.map((item, itemIndex) => {
+                  const globalIndex = filteredGroups
+                    .slice(0, filteredGroups.findIndex(g => g.id === group.id))
+                    .flatMap(g => g.items).length + itemIndex;
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`suggestion-item ${globalIndex === selectedIndex ? 'selected' : ''}`}
+                      onClick={item.action}
+                      onMouseEnter={() => setSelectedIndex(globalIndex)}
+                    >
+                      <div className="suggestion-icon">{item.icon}</div>
+                      <div className="suggestion-content">
+                        <div className="suggestion-title">
+                          {renderHighlightedText(item.title, searchTerm)}
+                        </div>
+                        <div className="suggestion-description">
+                          {renderHighlightedText(item.description, searchTerm)}
+                        </div>
+                      </div>
+                      {item.shortcut && (
+                        <div className="suggestion-shortcut">{item.shortcut}</div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            ))}
+          </div>
+        )
+    }
+  }
 
   return (
     <div className="backdrop" onClick={handleClose}>
-      <div className="command-palette" onClick={(e) => e.stopPropagation()}>
+      <div className={`command-palette ${isClosing ? 'closing' : isEntering ? '' : 'active'} ${shouldExpand ? 'expanded' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="command-input-container">
           <input
             type="text"
             className="command-input"
             placeholder={t('ui:commandPalette.placeholder')}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => handleInput(e.target.value)}
             ref={inputRef}
             aria-label={t('ui:commandPalette.placeholder')}
           />
+          {currentScene !== 'default' && (
+            <div className="scene-indicator visible">
+              {getSceneName(currentScene)}
+            </div>
+          )}
         </div>
 
-        <div className="command-suggestions" ref={suggestionsRef}>
-          {filteredGroups.map((group) => (
-            <div key={group.id} className="suggestion-group">
-              <div className="suggestion-group-title">{group.title}</div>
-              {group.items.map((item, itemIndex) => {
-                const globalIndex = filteredGroups
-                  .slice(0, filteredGroups.findIndex(g => g.id === group.id))
-                  .flatMap(g => g.items).length + itemIndex;
+        {shouldExpand && (
+          <>
+            {currentScene !== 'default' && (
+              <div className="expandable-content">
+                {renderScene()}
+              </div>
+            )}
 
-                return (
-                  <div
-                    key={item.id}
-                    className={`suggestion-item ${globalIndex === selectedIndex ? 'selected' : ''}`}
-                    onClick={item.action}
-                    onMouseEnter={() => setSelectedIndex(globalIndex)}
-                  >
-                    <div className="suggestion-icon">{item.icon}</div>
-                    <div className="suggestion-content">
-                      <div className="suggestion-title">
-                        {renderHighlightedText(item.title, searchTerm)}
-                      </div>
-                      <div className="suggestion-description">
-                        {renderHighlightedText(item.description, searchTerm)}
-                      </div>
-                    </div>
-                    {item.shortcut && (
-                      <div className="suggestion-shortcut">{item.shortcut}</div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          ))}
-        </div>
+            {currentScene === 'default' && renderScene()}
 
-        <div className="command-footer">
-          <div className="footer-shortcuts">
-            <div className="footer-shortcut">
-              <span className="key">↑↓</span>
-              <span>{t('ui:commandPalette.footerNavigate')}</span>
+            <div className="command-footer">
+              <div className="footer-shortcuts">
+                <div className="footer-shortcut">
+                  <span className="key">↑↓</span>
+                  <span>{t('ui:commandPalette.footerNavigate')}</span>
+                </div>
+                <div className="footer-shortcut">
+                  <span className="key">Enter</span>
+                  <span>{t('ui:commandPalette.footerSelect')}</span>
+                </div>
+                <div className="footer-shortcut">
+                  <span className="key">Esc</span>
+                  <span>{t('ui:commandPalette.footerClose')}</span>
+                </div>
+              </div>
+              <div className="ai-indicator">
+                <div className="ai-pulse"></div>
+                <span>{t('ui:commandPalette.aiReady')}</span>
+              </div>
             </div>
-            <div className="footer-shortcut">
-              <span className="key">Enter</span>
-              <span>{t('ui:commandPalette.footerSelect')}</span>
-            </div>
-            <div className="footer-shortcut">
-              <span className="key">Esc</span>
-              <span>{t('ui:commandPalette.footerClose')}</span>
-            </div>
-          </div>
-          <div className="ai-indicator">
-            <div className="ai-pulse"></div>
-            <span>{t('ui:commandPalette.aiReady')}</span>
-          </div>
-        </div>
+          </>
+        )}
       </div>
     </div>
   )

@@ -47,6 +47,12 @@
     "searchTasks": "タスクを検索...",
     "addNote": "メモを追加..."
   },
+  "editing": {
+    "enterToSave": "Enterで保存",
+    "escapeToCancel": "Escでキャンセル",
+    "doubleClickToEdit": "ダブルクリックで編集",
+    "clickToEdit": "クリックで編集"
+  },
   "messages": {
     "taskCreated": "タスクが作成されました",
     "taskUpdated": "タスクが更新されました",

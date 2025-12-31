@@ -47,6 +47,12 @@
     "searchTasks": "Search tasks...",
     "addNote": "Add a note..."
   },
+  "editing": {
+    "enterToSave": "Press Enter to save",
+    "escapeToCancel": "Press Esc to cancel",
+    "doubleClickToEdit": "Double-click to edit",
+    "clickToEdit": "Click to edit"
+  },
   "messages": {
     "taskCreated": "Task created successfully",
     "taskUpdated": "Task updated successfully",

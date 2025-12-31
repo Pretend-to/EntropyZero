@@ -1,22 +1,20 @@
 import React from 'react'
 import { useI18n } from '../hooks/useI18n'
 import { useTaskStore } from '../stores/useTaskStore'
+import { useTaskCreator } from '../hooks/useTaskCreator'
 import { useUIStore } from '../stores/useUIStore'
+import { useUndoRedo } from '../hooks/useUndoRedo'
 import './FloatingToolbar.css'
 
 const FloatingToolbar: React.FC = () => {
   const { t } = useI18n()
-  const { selectedTaskIds, addTask } = useTaskStore()
+  const { selectedTaskIds } = useTaskStore()
+  const { createTaskAtCenter } = useTaskCreator()
   const { setCommandPaletteOpen } = useUIStore()
+  const { undo, redo, canUndo, canRedo, getUndoDescription, getRedoDescription } = useUndoRedo()
 
   const handleAddTask = () => {
-    addTask({
-      title: t('placeholders.taskTitle', { ns: 'task' }),
-      status: 'todo',
-      priority: 'medium',
-      position: { x: 200, y: 200 },
-      tags: [],
-    })
+    createTaskAtCenter()
   }
 
   const handleOpenCommand = () => {
@@ -49,25 +47,29 @@ const FloatingToolbar: React.FC = () => {
     },
     {
       id: 'divider',
-      type: 'divider',
+      type: 'divider' as const,
     },
     {
       id: 'undo',
       icon: '↶',
       label: t('canvas.undo', { ns: 'ui' }),
       shortcut: 'Cmd+Z',
-      action: () => console.log('Undo'),
+      action: undo,
+      disabled: !canUndo,
+      tooltip: getUndoDescription() ? `撤销: ${getUndoDescription()}` : undefined,
     },
     {
       id: 'redo',
       icon: '↷',
       label: t('canvas.redo', { ns: 'ui' }),
       shortcut: 'Cmd+Shift+Z',
-      action: () => console.log('Redo'),
+      action: redo,
+      disabled: !canRedo,
+      tooltip: getRedoDescription() ? `重做: ${getRedoDescription()}` : undefined,
     },
     {
       id: 'divider2',
-      type: 'divider',
+      type: 'divider' as const,
     },
     {
       id: 'command-palette',
@@ -91,7 +93,7 @@ const FloatingToolbar: React.FC = () => {
             className={`toolbar-btn ${item.disabled ? 'toolbar-btn--disabled' : ''}`}
             onClick={item.action}
             disabled={item.disabled}
-            title={`${item.label} ${item.shortcut ? `(${item.shortcut})` : ''}`}
+            title={item.tooltip || `${item.label} ${item.shortcut ? `(${item.shortcut})` : ''}`}
           >
             <span className="toolbar-btn__icon">{item.icon}</span>
             <span className="toolbar-btn__label">{item.label}</span>

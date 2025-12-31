@@ -47,6 +47,12 @@
     "searchTasks": "搜索任务...",
     "addNote": "添加备注..."
   },
+  "editing": {
+    "enterToSave": "按 Enter 保存",
+    "escapeToCancel": "按 Esc 取消",
+    "doubleClickToEdit": "双击编辑",
+    "clickToEdit": "点击编辑"
+  },
   "messages": {
     "taskCreated": "任务创建成功",
     "taskUpdated": "任务更新成功",

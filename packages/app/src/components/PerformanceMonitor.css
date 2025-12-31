@@ -1,0 +1,120 @@
+.performance-monitor {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 280px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 12px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.performance-monitor__header {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px 8px 0 0;
+}
+
+.performance-monitor__header h3 {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.performance-monitor__content {
+  padding: 16px;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.performance-section {
+  margin-bottom: 16px;
+}
+
+.performance-section:last-child {
+  margin-bottom: 0;
+}
+
+.performance-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.performance-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.performance-item:last-child {
+  border-bottom: none;
+}
+
+.performance-item .label {
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 500;
+}
+
+.performance-item .value {
+  font-weight: 600;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.performance-item .value.good {
+  color: #10b981;
+}
+
+.performance-item .value.caution {
+  color: #f59e0b;
+}
+
+.performance-item .value.warning {
+  color: #ef4444;
+}
+
+/* 滚动条样式 */
+.performance-monitor__content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.performance-monitor__content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+}
+
+.performance-monitor__content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+.performance-monitor__content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .performance-monitor {
+    width: 240px;
+    font-size: 11px;
+  }
+  
+  .performance-monitor__header h3 {
+    font-size: 13px;
+  }
+  
+  .performance-section h4 {
+    font-size: 11px;
+  }
+}

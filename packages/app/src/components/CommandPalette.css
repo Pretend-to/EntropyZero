@@ -1,51 +1,136 @@
+/* 背景遮罩 - 完全透明，不影响背景 */
 .backdrop {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
+  background: transparent;
   z-index: 1000;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  padding-top: 30vh;
 }
 
+/* 指令面板容器 - 完全移除边框 + 动画效果 + 大圆角 + macOS 风格内阴影 */
 .command-palette {
   position: relative;
   width: 600px;
-  max-width: 90vw;
-  background: #1a1a1a;
-  border: 1px solid #3a3a3a;
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  max-width: calc(100vw - 40px);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: none !important;
+  outline: none !important;
+  border-radius: 30px; /* 大圆角，让左右看起来像半圆 */
+  /* macOS 风格的阴影组合：外阴影 + 内阴影白边 */
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
   overflow: hidden;
   z-index: 1001;
+  /* 固定最小高度，确保输入框位置不变 */
+  height: 60px; /* 使用固定高度而不是 min-height */
+  
+  /* 初始状态 - 透明度0，宽度120% */
+  opacity: 0;
+  transform: scaleX(1.2);
+  transition: opacity 0.2s ease-out, transform 0.2s ease-out, height 0.3s ease-out;
 }
 
+/* 激活状态 - 正常显示 */
+.command-palette.active {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+/* 关闭状态 - 退出动画 */
+.command-palette.closing {
+  opacity: 0;
+  transform: scaleX(1.2);
+  transition: opacity 0.2s ease-in, transform 0.2s ease-in, height 0.3s ease-out;
+}
+
+.command-palette.expanded {
+  height: 400px;
+}
+
+/* 搜索输入框 - 完全移除边框和轮廓 */
 .command-input-container {
-  padding: 1.5rem;
-  border-bottom: 1px solid #2a2a2a;
+  position: relative;
+  padding: 20px 24px;
 }
 
 .command-input {
   width: 100%;
   background: transparent;
-  border: none;
-  outline: none;
-  color: #ffffff;
-  font-size: 1.2rem;
-  font-weight: 500;
+  border: none !important;
+  outline: none !important;
+  font-size: 18px;
+  color: white;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  box-shadow: none !important;
+}
+
+.command-input:focus,
+.command-input:active,
+.command-input:focus-visible {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
 }
 
 .command-input::placeholder {
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.6);
 }
 
+/* 场景指示器 */
+.scene-indicator {
+  position: absolute;
+  top: 20px;
+  right: 24px;
+  padding: 4px 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.scene-indicator.visible {
+  opacity: 1;
+}
+
+/* 可展开内容区域 */
+.expandable-content {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.command-palette.expanded .expandable-content {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* 默认建议列表 - 只在展开时显示 */
 .command-suggestions {
-  max-height: 400px;
+  padding: 16px 0;
+  max-height: 340px;
   overflow-y: auto;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.command-palette.expanded .command-suggestions {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .suggestion-group {
@@ -54,7 +139,7 @@
 
 .suggestion-group-title {
   padding: 0.5rem 1.5rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.6);
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -62,22 +147,25 @@
 }
 
 .suggestion-item {
-  padding: 0.75rem 1.5rem;
-  cursor: pointer;
-  transition: background 0.15s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  border-left: 3px solid transparent;
 }
 
 .suggestion-item:hover,
 .suggestion-item.selected {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(255, 255, 255, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.6);
 }
 
 .suggestion-icon {
   width: 20px;
   height: 20px;
+  margin-right: 12px;
+  opacity: 0.8;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,39 +177,438 @@
 }
 
 .suggestion-title {
+  color: white;
+  font-size: 14px;
   font-weight: 500;
-  margin-bottom: 0.2rem;
-  color: #ffffff;
+  margin-bottom: 2px;
 }
 
 .suggestion-description {
-  color: #6b7280;
-  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
 }
 
 .suggestion-shortcut {
-  color: #6b7280;
-  font-size: 0.8rem;
-  background: #2a2a2a;
-  padding: 0.2rem 0.5rem;
-  border-radius: 4px;
-  font-family: monospace;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+  font-family: 'SF Mono', Monaco, monospace;
 }
 
-.command-footer {
-  padding: 1rem 1.5rem;
-  border-top: 1px solid #2a2a2a;
-  background: #151515;
+/* AI 聊天场景 */
+.ai-scene {
+  display: block;
+  padding: 16px 24px;
+  height: 340px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.command-palette.expanded .ai-scene {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.chat-messages {
+  height: 240px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+  padding-right: 8px;
+}
+
+.chat-message {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.chat-message.user {
+  background: rgba(0, 123, 255, 0.3);
+  color: white;
+  margin-left: 40px;
+}
+
+.chat-message.assistant {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+  margin-right: 40px;
+}
+
+.chat-input {
+  width: 100%;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  outline: none;
+}
+
+.chat-input::placeholder {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* 搜索场景 */
+.search-scene {
+  display: block;
+  padding: 16px 0;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.command-palette.expanded .search-scene {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.search-results {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.search-result {
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.search-result:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.result-title {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.result-path {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  margin-bottom: 2px;
+}
+
+.result-preview {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  line-height: 1.3;
+}
+
+/* 模板场景 */
+.template-scene {
+  display: block;
+  padding: 16px 24px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.command-palette.expanded .template-scene {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.template-categories {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.category-tag {
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.category-tag.active,
+.category-tag:hover {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+}
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 12px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.template-card {
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.template-card:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.template-title {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.template-description {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  line-height: 1.3;
+  margin-bottom: 8px;
+}
+
+.template-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* 工作流场景 */
+.workflow-scene {
+  display: block;
+  padding: 16px 24px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.command-palette.expanded .workflow-scene {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.workflow-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.workflow-item {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.workflow-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.workflow-icon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 12px;
+  font-size: 16px;
+}
+
+.workflow-content {
+  flex: 1;
+}
+
+.workflow-title {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 2px;
+}
+
+.workflow-description {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+}
+
+.workflow-status {
+  padding: 4px 8px;
+  background: rgba(0, 255, 0, 0.2);
+  color: rgba(0, 255, 0, 0.8);
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* 设置场景 */
+.settings-scene {
+  display: block;
+  padding: 16px 24px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.command-palette.expanded .settings-scene {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.settings-group {
+  margin-bottom: 20px;
+}
+
+.settings-group-title {
+  color: white;
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  padding-left: 4px;
+}
+
+.setting-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.setting-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.setting-label {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 13px;
+}
+
+.setting-toggle {
+  width: 36px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  position: relative;
+  transition: background-color 0.15s ease;
+}
+
+.setting-toggle.active {
+  background: rgba(59, 130, 246, 0.8);
+}
+
+.setting-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.15s ease;
+}
+
+.setting-toggle.active::after {
+  transform: translateX(16px);
+}
+
+/* 帮助场景 */
+.help-scene {
+  display: block;
+  padding: 16px 24px;
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.command-palette.expanded .help-scene {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.help-content {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.help-section {
+  margin-bottom: 16px;
+}
+
+.help-title {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.help-shortcuts {
+  display: grid;
+  gap: 6px;
+}
+
+.shortcut-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+}
+
+.shortcut-description {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+}
+
+.shortcut-keys {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 11px;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+/* 快捷键提示 - 只在展开时显示 */
+.command-footer {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+
+.command-palette.expanded .command-footer {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .footer-shortcuts {
   display: flex;
   gap: 1rem;
   font-size: 0.8rem;
-  color: #6b7280;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .footer-shortcut {
@@ -131,7 +618,7 @@
 }
 
 .key {
-  background: #2a2a2a;
+  background: rgba(255, 255, 255, 0.1);
   padding: 0.2rem 0.4rem;
   border-radius: 3px;
   font-family: monospace;
@@ -160,26 +647,63 @@
 }
 
 .highlight {
-  background: rgba(59, 130, 246, 0.3);
-  color: #60a5fa;
-  padding: 0.1rem 0.2rem;
-  border-radius: 3px;
+  background: rgba(255, 255, 0, 0.3);
+  color: white;
+  padding: 1px 2px;
+  border-radius: 2px;
 }
 
 /* 滚动条样式 */
-.command-suggestions::-webkit-scrollbar {
+::-webkit-scrollbar {
   width: 6px;
 }
 
-.command-suggestions::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.command-suggestions::-webkit-scrollbar-thumb {
-  background: #3a3a3a;
+::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
   border-radius: 3px;
 }
 
-.command-suggestions::-webkit-scrollbar-thumb:hover {
-  background: #4a4a4a;
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+/* 强制移除所有可能的边框和轮廓，但保持阴影 */
+.command-palette *,
+.command-palette *:before,
+.command-palette *:after {
+  box-sizing: border-box;
+}
+
+.command-palette,
+.command-palette *,
+.command-input-container,
+.command-input {
+  border: none !important;
+  outline: none !important;
+}
+
+/* 输入框相关的 focus 状态不影响容器阴影 */
+.command-input:focus,
+.command-input:active,
+.command-input:focus-visible,
+.command-input:focus-within {
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* 确保容器阴影始终存在，不被任何状态覆盖 */
+.command-palette,
+.command-palette:focus,
+.command-palette:focus-within,
+.command-palette:active,
+.command-palette:hover {
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1) !important;
 }

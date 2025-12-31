@@ -1,0 +1,113 @@
+.context-menu {
+  position: fixed;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  padding: var(--space-sm);
+  min-width: 200px;
+  z-index: 9999; /* 确保在最上层 */
+  user-select: none;
+}
+
+.context-menu__section {
+  padding: 2px 0; /* 减少section的内边距 */
+}
+
+.context-menu__section:not(:last-child) {
+  border-bottom: 1px solid var(--border-primary);
+  margin-bottom: 2px; /* 减少底部边距 */
+  padding-bottom: var(--space-xs);
+}
+
+.context-menu__item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: var(--space-xs) var(--space-md);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+  min-height: 28px; /* 减少最小高度 */
+}
+
+.context-menu__item:hover {
+  background: var(--bg-tertiary);
+}
+
+.context-menu__item--active {
+  background: rgba(59, 130, 246, 0.2);
+  color: var(--accent-primary);
+}
+
+.context-menu__item--danger {
+  color: var(--error);
+}
+
+.context-menu__item--danger:hover {
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.context-menu__item--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.context-menu__disabled-reason {
+  font-size: var(--font-size-xs);
+  color: var(--text-tertiary);
+  margin-top: 2px;
+  display: block;
+}
+
+.context-menu__label {
+  flex: 1;
+  text-align: left;
+}
+
+.context-menu__submenu {
+  /* 子菜单样式 */
+}
+
+.context-menu__submenu-header {
+  display: flex;
+  align-items: center;
+  padding: var(--space-xs) var(--space-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  min-height: 24px; /* 减少子菜单头部高度 */
+}
+
+.context-menu__submenu-content {
+  padding-left: var(--space-sm); /* 减少左边距 */
+}
+
+.context-menu__submenu-content .context-menu__item {
+  padding: 2px var(--space-md); /* 进一步减少子菜单项的内边距 */
+  font-size: var(--font-size-xs);
+  min-height: 24px; /* 减少子菜单项高度 */
+}
+
+/* 动画效果 */
+.context-menu {
+  animation: contextMenuFadeIn 0.15s ease-out;
+}
+
+@keyframes contextMenuFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
